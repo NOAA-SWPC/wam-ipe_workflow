@@ -3,8 +3,8 @@ set -x
 
 CDATE=${1:-""}
 CDUMP=${2:-""}
-SOURCE_DIR=${3:-$DMPDIR/${CDUMP}${DUMP_SUFFIX}.${PDY}/${cyc}}
-TARGET_DIR=${4:-$ROTDIR/${CDUMP}.${PDY}/$cyc}
+SOURCE_DIR=${3:-$COMINgfs}
+TARGET_DIR=${4:-$COMOUT}
 
 DUMP_SUFFIX=${DUMP_SUFFIX:-""}
 
@@ -18,24 +18,21 @@ fi
 # Create TARGET_DIR if is does not exist
 if [ ! -s $TARGET_DIR ]; then mkdir -p $TARGET_DIR ;fi
 
-
 # Set file prefix
 cyc=`echo $CDATE |cut -c 9-10`
 prefix="$CDUMP.t${cyc}z."
 
 # Link dump files from SOURCE_DIR to TARGET_DIR
 cd $SOURCE_DIR
+for file in ${prefix}*seaice.5min* ${prefix}*snogrb* \
+            ${prefix}*syndata.tcvitals*; do
+    [ ! -f $file ] && export err=1 && err_exit "required global dump data unavailable"
     if [ $RUN_ENVIR = 'nco' ] ; then
-        for file in `ls ${prefix}*seaice.5min* ${prefix}*snogrb* \
-		        ${prefix}*syndata.tcvitals*`; do
-            cp --preserve=mode,ownership $SOURCE_DIR/$file $TARGET_DIR/w${file:1}
-        done
+        cp --preserve=mode,ownership $SOURCE_DIR/$file $TARGET_DIR/w${file:1}
     else
-        for file in `ls ${prefix}*seaice.5min* ${prefix}*snogrb* \
-                        ${prefix}*syndata.tcvitals*`; do
-            ln -fs $SOURCE_DIR/$file $TARGET_DIR/w${file:1}
-        done
+        ln -fs $SOURCE_DIR/$file $TARGET_DIR/w${file:1}
     fi
+done
 exit 0
 
 

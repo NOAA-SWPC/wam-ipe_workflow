@@ -55,7 +55,7 @@ output_datatype: float
 #   <suffix>   : determined from output format:
 #                'hd5' for hdf5, 'nc' for pnetcdf
 #
-output_file_prefix: SWIO/${CDUMP}.t${cyc}z.gsm10
+output_file_prefix: SWIO/${CDUMP}.t${cyc}z.wam10
 #
 # Output metadata.
 #

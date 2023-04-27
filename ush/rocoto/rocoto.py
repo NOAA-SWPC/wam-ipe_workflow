@@ -70,6 +70,7 @@ def create_task(task_dict):
     walltime = task_dict.get('walltime', '00:01:00')
     log = task_dict.get('log', 'demo.log')
     native = task_dict.get('native', None)
+    nodesize = task_dict.get('nodesize', 128)
     memory = task_dict.get('memory', None)
     resources = task_dict.get('resources', None)
     envar = task_dict.get('envar', None)
@@ -98,6 +99,8 @@ def create_task(task_dict):
         strings.append('\t<memory>%s</memory>\n' % memory)
     if native is not None:
         strings.append('\t<native>%s</native>\n' % native)
+    if nodesize is not None:
+        strings.append('\t<nodesize>%s</nodesize>\n' % nodesize)
     strings.append('\n')
     strings.append('\t<join><cyclestr>%s</cyclestr></join>\n' % log)
     strings.append('\n')

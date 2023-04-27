@@ -15,7 +15,6 @@ model=wfs
 set -x
 
 export NET=%NET:wfs%
-export RUN=%RUN:wdas%
 export CDUMP=%RUN:wdas%
 
 ############################################################
@@ -28,9 +27,6 @@ module load cray-mpich/$cray_mpich_ver
 module load cray-libsci/$cray_libsci_ver
 module load cray-pals/$cray_pals_ver
 module load cfp/$cfp_ver
-module load crtm/$crtm_ver
-module load netcdf/$netcdf_ver
-module load hdf5/$hdf5_ver
 module list
 
 #%include <ecf_client.h>

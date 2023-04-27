@@ -107,11 +107,9 @@ def edit_baseconfig():
                     .replace('@QUEUE_ARCH@', queue_arch) \
                     .replace('@PARAMETER_PATH@', parameter_path) \
                     .replace('@IPE_IC_DIR@', ipe_ic_dir) \
-                    .replace('@DCOM@', dcom) 
+                    .replace('@DCOM@', dcom)
                 if expdir is not None:
                     line = line.replace('@EXPDIR@', os.path.dirname(expdir))
-                if comrot is not None:
-                    line = line.replace('@ROTDIR@', os.path.dirname(comrot))
                 if 'ICSDIR' in line:
                     continue
                 fo.write(line)
@@ -169,33 +167,12 @@ link initial condition files from $ICSDIR to $COMROT'''
     partition = args.partition
 
     # Set machine defaults
-    if machine == 'WCOSS_DELL_P3':
-      base_git = '/gpfs/dell2/emc/modeling/noscrub/emc.glopara/git'
-      base_svn = '/gpfs/dell2/emc/modeling/noscrub/emc.glopara/git'
-      dmpdir = '/gpfs/dell3/emc/global/dump'
-      nwprod = '${NWROOT:-"/gpfs/dell1/nco/ops/nwprod"}'
-      comroot = '${COMROOT:-"/gpfs/dell1/nco/ops/com"}'
-      homedir = '/gpfs/dell2/emc/modeling/noscrub/$USER'
-      stmp = '/gpfs/dell3/stmp/$USER'
-      ptmp = '/gpfs/dell3/ptmp/$USER'
-      noscrub = '/gpfs/dell2/emc/modeling/noscrub/$USER'
-      account = 'SPACE-T2O'
-      queue = 'dev'
-      queue_arch = 'dev_transfer'
-      ipe_ic_dir = '/gpfs/dell2/swpc/noscrub/Adam.Kubaryk/refactored_ipe_input_decks'
-      parameter_path = '/gpfs/dell2/swpc/noscrub/Adam.Kubaryk/WAM-IPE_INPUT_PARAMETERS'
-      dcom = '/gpfs/dell1/nco/ops/dcom/prod'
-
-      if partition in ['3p5']:
-        queue = 'dev2'
-        queue_arch = 'dev2_transfer'
-
-    elif machine == 'WCOSS2':
+    if machine == 'WCOSS2':
       base_git = '/lfs/h2/emc/noscrub/emc.glopara/git'
       base_svn = '/lfs/h2/emc/noscrub/emc.glopara/git'
       dmpdir = '/lfs/h2/emc/global/noscrub/dump'
       nwprod = '${NWROOT:-"/lfs/h1/ops/prod/nwprod"}'
-      comroot = '${COMROOT:-"/lfs/h1/ops/prod/com"}'
+      comroot = '${COMROOT:-"/lfs/h1/swpc/ptmp/$USER"}'
       homedir = '/lfs/h1/swpc/wam/noscrub/$USER'
       stmp = '/lfs/h1/swpc/stmp/$USER'
       ptmp = '/lfs/h1/swpc/ptmp/$USER'
@@ -205,7 +182,7 @@ link initial condition files from $ICSDIR to $COMROT'''
       queue_arch = 'dev_transfer'
       ipe_ic_dir = '/lfs/h1/swpc/wam/noscrub/Adam.Kubaryk/WAM_FIX/IPE_FIX'
       parameter_path = '/lfs/h1/gpfs/dell2/swpc/noscrub/Adam.Kubaryk/WAM-IPE_INPUT_PARAMETERS'
-      dcom = '/lfs/h1/ops/canned/dcom' # prod
+      dcom = '/lfs/h1/ops/prod/dcom'
 
       if partition in ['3p5']:
         queue = 'dev2'

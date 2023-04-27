@@ -1,8 +1,12 @@
 #! /usr/bin/env bash
 set -eux
 
+build_target=${1:-"all"}
+
+if [ $build_target = "all" ] ; then
+
 source ./machine-setup.sh > /dev/null 2>&1
-[[ -z ${comio_ver+x} ]] && source ../versions/build.ver
+source ../versions/build.ver
 cwd=`pwd`
 
 USE_PREINST_LIBS=${USE_PREINST_LIBS:-"true"}
@@ -13,7 +17,6 @@ else
 fi
 
 gsitarget=$target
-[[ "$target" == wcoss_cray ]] && gsitarget=cray
 
 # Check final exec folder exists
 if [ ! -d "../exec" ]; then
@@ -21,7 +24,18 @@ if [ ! -d "../exec" ]; then
 fi
 
 cd gsi.fd/ush/
-./build_all_cmake.sh "PRODUCTION" "$cwd/gsi.fd"
+./build.sh "PRODUCTION" "$cwd/gsi.fd"
+
+elif [ $build_target = "clean" ] ; then
+
+rm -rf gsi.fd/build
+rm -f gsi.fd/exec/*
+
+elif [ $build_target = "install" ] ; then
+
+echo "run ./build_all.sh install"
+
+fi
 
 exit
 

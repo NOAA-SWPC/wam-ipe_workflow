@@ -7,7 +7,7 @@ if [ ! -z ${PBS_O_WORKDIR} ]; then cd $PBS_O_WORKDIR; fi
 ## HOMEwfs   : /full/path/to/workflow
 ## EXPDIR : /full/path/to/config/files
 ## CDATE  : current analysis date (YYYYMMDDHH)
-## CDUMP  : cycle name (wdas / wfs / wfr)
+## CDUMP  : cycle name (wdas / wfs / wrs)
 ## PDY    : current date (YYYYMMDD)
 ## cyc    : current cycle (HH)
 ###############################################################
@@ -50,8 +50,15 @@ PDY_MOS=$(echo $CDATE_MOS | cut -c1-8)
 # Archive online for verification and diagnostics
 ###############################################################
 
-COMIN="$ROTDIR/$CDUMP.$PDY/$cyc"
-cd $COMIN
+export COMIN=${COMIN:-$(compath.py $NET/${wfs_ver}/$CDUMP.$PDY/$cyc)}
+export COMOUT=${COMOUT:-$(compath.py -o $NET/${wfs_ver}/$CDUMP.$PDY/$cyc)}
+
+mkdir -p $COMOUT
+cd $COMOUT
+
+if [ $COMIN != $COMOUT ] ; then
+    ln -fs $COMIN/* .
+fi
 
 ###############################################################
 # Archive data to HPSS
@@ -68,7 +75,7 @@ dd=`echo $CDATE|cut -c 7-8`
 nday=$(( (mm-1)*30+dd ))
 mod=$(($nday % $ARCH_WARMICFREQ))
 
-ARCH_LIST="$COMIN/archlist"
+ARCH_LIST="$COMOUT/archlist"
 [[ -d $ARCH_LIST ]] && rm -rf $ARCH_LIST
 mkdir -p $ARCH_LIST
 cd $ARCH_LIST
@@ -80,9 +87,13 @@ if [ $status -ne 0  ]; then
     exit $status
 fi
 
-cd $ROTDIR
+cd $COMOUT/../..
 
-htar -P -cvf $ATARDIR/$CDATE/${CDUMP}.tar $(cat $ARCH_LIST/${CDUMP}.txt)
+export ERRSCRIPT=${ERRSCRIPT:-'eval [[ $err = 0 ]]'}
+htar -P -hcvf $ATARDIR/$CDATE/${CDUMP}.tar $(cat $ARCH_LIST/${CDUMP}.txt)
+export ERR=$?
+export err=$ERR
+$ERRSCRIPT||exit 2
 
 ###############################################################
 fi  ##end of HPSS archive
@@ -116,20 +127,20 @@ GDATE=$(   $NDATE -${RMOLDSTD:-120} $CDATE)
 while [ $GDATE -le $GDATEEND ]; do
     gPDY=$(echo $GDATE | cut -c1-8)
     gcyc=$(echo $GDATE | cut -c9-10)
-    COMIN="$ROTDIR/$CDUMP.$gPDY/$gcyc"
-    if [ -d $COMIN ]; then
+    COMOUT=$(compath.py -o $NET/${wfs_ver}/$CDUMP.$gPDY/$gcyc)
+    if [ -d $COMOUT ]; then
         rocotolog="$EXPDIR/logs/${GDATE}.log"
 	if [ -f $rocotolog ]; then
             testend=$(tail -n 1 $rocotolog | grep "This cycle is complete: Success")
             rc=$?
-            [[ $rc -eq 0 ]] && rm -rf $COMIN
+            [[ $rc -eq 0 ]] && rm -rf $COMOUT
 	fi
     fi
 
     # Remove any empty directories
-    COMIN="$ROTDIR/$CDUMP.$gPDY"
-    if [ -d $COMIN ]; then
-        [[ ! "$(ls -A $COMIN)" ]] && rm -rf $COMIN
+    COMOUT=$(compath.py -o $NET/${wfs_ver}/$CDUMP.$gPDY)
+    if [ -d $COMOUT ]; then
+        [[ ! "$(ls -A $COMIN)" ]] && rm -rf $COMOUT
     fi
 
     GDATE=$($NDATE +$assim_freq $GDATE)

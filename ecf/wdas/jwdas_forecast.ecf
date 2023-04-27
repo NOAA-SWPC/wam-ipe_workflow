@@ -54,9 +54,10 @@ fi
 
 %include <tail.h>
 %manual
-# Runs WDAS forecast job. Typical runtime ~30 min. No restart capability.  Prep
-# and analysis jobs take a few minutes total to run, so if in doubt, rerun them.
-# Prep job processes GDAS input (various bufr_d files from current cycle's atmos
-# dir), so rerun from prep job if something went wrong with GDAS once corrected.
+# Runs WDAS forecast job. Typical runtime ~30 min. Restart implemented in theory,
+# but the window for getting a restart post-IAU is narrow. Wiping the $RESTARTDIR
+# will ensure the job coldstarts.
+# Analysis job processes GDAS input (various bufr_d files from current cycle's atmos
+# dir), so rerun from analysis if something went wrong with GDAS once corrected.
 # The only WAM-IPE data needed is the *previous* cycle's WDAS forecast output.
 %end

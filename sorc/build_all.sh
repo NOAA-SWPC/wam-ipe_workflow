@@ -2,19 +2,19 @@
 set +x
 #------------------------------------
 # Exception handling is now included.
-#
-# USER DEFINED STUFF:
-#
-# USE_PREINST_LIBS: set to "true" to use preinstalled libraries.
-#                   Anything other than "true"  will use libraries locally.
 #------------------------------------
+
+build_target=${1:-"all"}
+
+if [ $build_target = "install" ] ; then
+
+. ./link_gsmwam_ipe.sh nco wcoss2
+exit $?
+
+fi
 
 export USE_PREINST_LIBS="true"
-module purge
-
-#------------------------------------
-# END USER DEFINED STUFF
-#------------------------------------
+source ../versions/build.ver
 
 build_dir=`pwd`
 logs_dir=$build_dir/logs
@@ -32,15 +32,7 @@ fi
 #------------------------------------
 # GET MACHINE
 #------------------------------------
-target=""
-source ./machine-setup.sh > /dev/null 2>&1
-
-source ../versions/build.ver
-#------------------------------------
-# INCLUDE PARTIAL BUILD 
-#------------------------------------
-
-. ./partial_build.sh
+[ $build_target = "all" ] && module reset && source ./machine-setup.sh > /dev/null 2>&1
 
 #------------------------------------
 # Exception Handling Init
@@ -49,88 +41,83 @@ ERRSCRIPT=${ERRSCRIPT:-'eval [[ $err = 0 ]]'}
 err=0
 
 #------------------------------------
-# build libraries first
-#------------------------------------
-$Build_libs && {
-echo " .... Library build not currently supported .... "
-#echo " .... Building libraries .... "
-#./build_libs.sh > $logs_dir/build_libs.log 2>&1
-}
-
-#------------------------------------
 # build COMIO
 #------------------------------------
-$Build_comio && {
-echo " .... Building comio .... "
-./build_comio.sh > $logs_dir/build_comio.log 2>&1
+echo " .... Executing ./build_comio.sh $build_target .... "
+./build_comio.sh $build_target > $logs_dir/build_comio_$build_target.log 2>&1
 rc=$?
 if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in building COMIO."
-    echo "The log file is in $logs_dir/build_comio.log"
+    echo "Fatal error in build_comio.sh"
+    echo "The log file is in $logs_dir/build_comio_$build_target.log"
 fi
 ((err+=$rc))
-}
 
 #------------------------------------
 # build GSMWAM-IPE
 #------------------------------------
-$Build_gsmwam_ipe && {
-echo " .... Building gsmwam_ipe .... "
-./build_gsmwam_ipe.sh > $logs_dir/build_gsmwam_ipe.log 2>&1
+echo " .... Executing ./build_gsmwam_ipe.sh $build_target .... "
+./build_gsmwam_ipe.sh $build_target > $logs_dir/build_gsmwam_ipe_$build_target.log 2>&1
 rc=$?
 if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in building GSMWAM-IPE."
-    echo "The log file is in $logs_dir/build_gsmwam_ipe.log"
+    echo "Fatal error in build_gsmwam_ipe.sh"
+    echo "The log file is in $logs_dir/build_gsmwam_ipe_$build_target.log"
 fi
 ((err+=$rc))
-}
 
 #------------------------------------
 # build gsi
 #------------------------------------
-$Build_gsi && {
-echo " .... Building gsi .... "
-./build_gsi.sh > $logs_dir/build_gsi.log 2>&1
+echo " .... Executing ./build_gsi.sh $build_target .... "
+./build_gsi.sh $build_target > $logs_dir/build_gsi_$build_target.log 2>&1
 rc=$?
 if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in building gsi."
-    echo "The log file is in $logs_dir/build_gsi.log"
+    echo "Fatal error in build_gsi.sh"
+    echo "The log file is in $logs_dir/build_gsi_$build_target.log"
 fi
 ((err+=$rc))
-}
 
 #------------------------------------
 # build wam-ipe_utils
 #------------------------------------
-$Build_wamipe_utils && {
-echo " .... Building wamipe_utils .... "
-./build_wamipe_utils.sh > $logs_dir/build_wamipe_utils.log 2>&1
+echo " .... Executing ./build_wamipe_utils.sh $build_target .... "
+./build_wamipe_utils.sh $build_target > $logs_dir/build_wamipe_utils_$build_target.log 2>&1
 rc=$?
 if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in building wamipe_utils."
-    echo "The log file is in $logs_dir/build_wamipe_utils.log"
+    echo "Fatal error in build_wamipe_utils.sh"
+    echo "The log file is in $logs_dir/build_wamipe_utils_$build_target.log"
 fi
 ((err+=$rc))
-}
 
 #------------------------------------
 # build obsproc
 #------------------------------------
-$Build_obsproc && {
-echo " .... Building obsproc .... "
-./build_obsproc.sh > $logs_dir/build_obsproc.log 2>&1
-rc=$?
-if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in building obsproc."
-    echo "The log file is in $logs_dir/build_obsproc.log"
+#echo " .... Building obsproc .... "
+#./build_obsproc.sh $build_target > $logs_dir/build_obsproc_$build_target.log 2>&1
+#rc=$?
+#if [[ $rc -ne 0 ]] ; then
+#    echo "Fatal error in build_obsproc.sh"
+#    echo "The log file is in $logs_dir/build_obsproc_$build_target.log"
+#fi
+#((err+=$rc))
+
+# do additional cleanup
+if [ $build_target = "clean" ] ; then
+
+rm -f  ../exec/*
+rm -rf ../fix/*
+rm -f ../jobs/JWAMIPE_ANALYSIS
+rm -f ../scripts/exwamipe_analysis.sh
+rm -f ../ush/global_cycle*sh
+for file in parse_realtime.py sw_from_f107_kp.py realtime_wrapper.py ; do
+    rm -f ../ush/$file
+done
+
 fi
-((err+=$rc))
-}
 
 #------------------------------------
 # Exception Handling
 #------------------------------------
-[[ $err -ne 0 ]] && echo "FATAL BUILD ERROR: Please check the log file for detail, ABORT!"
+[[ $err -ne 0 ]] && echo "FATAL BUILD SCRIPT ERROR: Please check the log file for detail, ABORT!"
 $ERRSCRIPT || exit $err
 
 echo;echo " .... Build system finished .... "

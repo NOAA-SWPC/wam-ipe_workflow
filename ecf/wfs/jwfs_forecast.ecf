@@ -1,12 +1,12 @@
 #! /bin/bash
-#PBS -N wfs_analysis_%CYC%
+#PBS -N wfs_forecast_high_%CYC%
 #PBS -j oe
 #PBS -S /bin/bash
 #PBS -q %QUEUE%
 #PBS -A %PROJ%-%PROJENVIR%
-#PBS -l walltime=00:45:00
-#PBS -l place=excl,select=1:ncpus=128
-##:mem=500GB
+#PBS -l walltime=03:30:00
+#PBS -l place=excl,select=1:ncpus=112
+##:mem=120GB
 #PBS -l debug=true
 
 model=wfs
@@ -28,21 +28,21 @@ module load cray-mpich/$cray_mpich_ver
 module load cray-libsci/$cray_libsci_ver
 module load cray-pals/$cray_pals_ver
 module load cfp/$cfp_ver
-module load crtm/$crtm_ver
+module load esmf/$esmf_ver
 module load netcdf/$netcdf_ver
 module load hdf5/$hdf5_ver
+module load python/$python_ver
+
 module list
 
-#%include <ecf_client.h>
 export USE_CFP=YES
 export cyc=%CYC%
 export cycle=t%CYC%z
-export PREINP=${CDUMP}.${cycle}.
 
 ############################################################
 # CALL executable job script here
 ############################################################
-${HOMEwfs}/jobs/JWAMIPE_ANALYSIS
+${HOMEwfs}/jobs/JWAMIPE_FORECAST
 
 if [ $? -ne 0 ]; then
    ecflow_client --msg="***JOB ${ECF_NAME} ERROR RUNNING J-SCRIPT ***"
@@ -52,5 +52,13 @@ fi
 
 %include <tail.h>
 %manual
-
+# Runs WFS forecast job. Typical runtime ~3 hours.
+# Analysis job processes GFS input (various bufr_d files from current cycle's atmos
+# dir), so rerun from analysis if something went wrong with GFS once corrected.
+# It takes <15 minutes total to run, so if in doubt, re-run it.
+# The only WAM-IPE data needed is the *previous* cycle's WDAS forecast output.
+# Restart capability is implemented; wiping $RESTARTDIR will force a coldstart.
+# Note that because WAM integrates slightly ahead of IPE, it can happen that WAM
+# restart files don't have a matching IPE model file to restart from -- in this case,
+# the J-Job will determine this and force a coldstart.
 %end

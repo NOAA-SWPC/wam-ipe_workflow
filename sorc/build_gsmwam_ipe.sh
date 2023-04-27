@@ -1,7 +1,11 @@
 #! /usr/bin/env bash
 set -eux
 
-source ./machine-setup.sh > /dev/null 2>&1
+build_target=${1:-"all"}
+
+if [ $build_target = "all" ] ; then
+
+source ./machine-setup.sh
 [[ -z ${comio_ver+x} ]] && source ../versions/build.ver
 cwd=`pwd`
 
@@ -18,8 +22,18 @@ if [ ! -d "../exec" ]; then
 fi
 
 if [ $target = hera ]; then target=hera.intel ; fi
-module use $cwd/../modulefiles
 
 cd gsmwam_ipe.fd/NEMS
-gmake -j app=coupledWAM_IPE_SWIO_DATAPOLL distclean
 gmake -j app=coupledWAM_IPE_SWIO_DATAPOLL build
+
+elif [ $build_target = "clean" ] ; then
+cd gsmwam_ipe.fd/NEMS
+gmake -j app=coupledWAM_IPE_SWIO_DATAPOLL distclean
+
+elif [ $build_target = "install" ] ; then
+
+echo "run ./build_all.sh install"
+
+fi
+
+exit $?

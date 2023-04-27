@@ -10,7 +10,7 @@ module-whatis "Enables COMmon I/O layer (COMIO)"
 
 set script_path [ file dirname [ file normalize [ info script ] ] ]
 
-set base        $script_path/../sorc/comio.fd/install
+set base        $script_path/../../sorc/comio.fd/install
 
 conflict comio
 

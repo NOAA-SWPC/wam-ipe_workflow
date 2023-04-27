@@ -8,7 +8,7 @@ status=$?
 
 ###############################################################
 # Execute the JJOB
-export wfr_service="YES"
+export wrs_service="YES"
 
 $HOMEwfs/jobs/JWAMIPE_FORECAST
 status=$?

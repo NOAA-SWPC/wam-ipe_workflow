@@ -1,12 +1,11 @@
-#!/bin/bash
-#PBS -N wdas_analysis_high_%CYC%
+#! /bin/bash
+#PBS -N wrs_nowcast_service_%CYC%
 #PBS -j oe
 #PBS -S /bin/bash
 #PBS -q %QUEUE%
 #PBS -A %PROJ%-%PROJENVIR%
-#PBS -l walltime=00:45:00
-#PBS -l place=excl,select=1:ncpus=128
-##:mem=500GB
+#PBS -l walltime=08:00:00
+#PBS -l place=shared,select=1:ncpus=1:mem=1GB
 #PBS -l debug=true
 
 model=wfs
@@ -16,8 +15,7 @@ model=wfs
 set -x
 
 export NET=%NET:wfs%
-export RUN=%RUN:wdas%
-export CDUMP=%RUN:wdas%
+export CDUMP=%RUN:wrs%
 
 ############################################################
 # Load modules
@@ -29,21 +27,22 @@ module load cray-mpich/$cray_mpich_ver
 module load cray-libsci/$cray_libsci_ver
 module load cray-pals/$cray_pals_ver
 module load cfp/$cfp_ver
-module load crtm/$crtm_ver
+module load esmf/$esmf_ver
 module load netcdf/$netcdf_ver
 module load hdf5/$hdf5_ver
+module load python/$python_ver
+
 module list
 
-#%include <ecf_client.h>
 export USE_CFP=YES
 export cyc=%CYC%
 export cycle=t%CYC%z
-export PREINP=${CDUMP}.${cycle}.
+export wrs_service=YES
 
 ############################################################
 # CALL executable job script here
 ############################################################
-${HOMEwfs}/jobs/JWAMIPE_ANALYSIS
+${HOMEwfs}/jobs/JWAMIPE_FORECAST
 
 if [ $? -ne 0 ]; then
    ecflow_client --msg="***JOB ${ECF_NAME} ERROR RUNNING J-SCRIPT ***"
@@ -53,5 +52,13 @@ fi
 
 %include <tail.h>
 %manual
-
+# Runs WRS nowcast service job. Typical runtime ~6.5 hours.
+# This runs a python script which polls dcom for new incoming solar wind data.
+# In the event that there is a multi-hour gap in incoming solar wind data
+# to dcom, this job can fail late in its execution on wallclock exceedance.
+# If the next cycle's WRS nowcast job has successfully spun up, this job
+# _does not_ need to be re-run, as the nowcast will be picked up in stride.
+# Restart capability is implemented -- deleting $COMOUT/*input_parameters*
+# will force a coldstart of this helper job; but jwrs_nowcast would also need
+# to be run again.
 %end

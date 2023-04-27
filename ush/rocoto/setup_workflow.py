@@ -152,7 +152,9 @@ def get_definitions(base):
 
     strings.append('\n')
     strings.append('\t<!-- Experiment parameters such as name, starting, ending dates -->\n')
+    strings.append('\t<!ENTITY USER "%s">\n'  % os.environ['USER'])
     strings.append('\t<!ENTITY PSLOT "%s">\n' % base['PSLOT'])
+    strings.append('\t<!ENTITY job "%s">\n'   % base['PSLOT'])
     strings.append('\t<!ENTITY SDATE "%s">\n' % base['SDATE'].strftime('%Y%m%d%H%M'))
     strings.append('\t<!ENTITY EDATE "%s">\n' % base['EDATE'].strftime('%Y%m%d%H%M'))
 
@@ -164,8 +166,9 @@ def get_definitions(base):
     strings.append('\t<!ENTITY RUN_ENVIR "%s">\n' % base['RUN_ENVIR'])
     strings.append('\n')
     strings.append('\t<!-- Experiment and Rotation directory -->\n')
-    strings.append('\t<!ENTITY EXPDIR "%s">\n' % base['EXPDIR'])
-    strings.append('\t<!ENTITY ROTDIR "%s">\n' % base['ROTDIR'])
+    strings.append('\t<!ENTITY EXPDIR "%s">\n'   % base['EXPDIR'])
+    strings.append('\t<!ENTITY COMROOT "%s">\n'  % base['COMROOT'])
+    strings.append('\t<!ENTITY DATAROOT "%s">\n' % base['DATAROOT'])
     strings.append('\n')
     strings.append('\t<!-- Directories for driving the workflow -->\n')
     strings.append('\t<!ENTITY HOMEwfs  "%s">\n' % base['HOMEwfs'])
@@ -344,7 +347,8 @@ def get_wdaswfs_tasks(dict_configs, cdump='wdas'):
     envars.append(rocoto.create_envar(name='CDUMP', value='%s' % cdump))
     envars.append(rocoto.create_envar(name='PDY', value='<cyclestr>@Y@m@d</cyclestr>'))
     envars.append(rocoto.create_envar(name='cyc', value='<cyclestr>@H</cyclestr>'))
-    envars.append(rocoto.create_envar(name='DATAROOT', value='&ROTDIR;/RUNDIRS/&PSLOT;'))
+    envars.append(rocoto.create_envar(name='COMROOT', value='&COMROOT;'))
+    envars.append(rocoto.create_envar(name='DATAROOT', value='&COMROOT;/RUNDIRS/&PSLOT;'))
 
     base = dict_configs['base']
     wfs_cyc = base.get('wfs_cyc', 0)
@@ -362,7 +366,7 @@ def get_wdaswfs_tasks(dict_configs, cdump='wdas'):
     deps = []
     dep_dict = {'type': 'task', 'name': '%sfcst' % 'wdas', 'offset': '-06:00:00'}
     deps.append(rocoto.add_dependency(dep_dict))
-    data = '&ROTDIR;/wdas.@Y@m@d/@H/wdas.t@Hz.atmf06'
+    data = '&COMROOT;/wdas.@Y@m@d/@H/wdas.t@Hz.atmf06'
     dep_dict = {'type': 'data', 'data': data, 'offset': '-06:00:00'}
     deps.append(rocoto.add_dependency(dep_dict))
     data = '&DMPDIR;/%s%s.@Y@m@d/@H/%s.t@Hz.updated.status.tm00.bufr_d' % ("g{}".format(cdump[1:]), dumpsuffix, "g{}".format(cdump[1:]))
@@ -588,7 +592,6 @@ def get_workflow_header(base):
     strings.append('\t<log verbosity="10"><cyclestr>&EXPDIR;/logs/@Y@m@d@H.log</cyclestr></log>\n')
     strings.append('\n')
     strings.append('\t<!-- Define the cycles -->\n')
-    strings.append('\t<cycledef group="first">&SDATE;     &SDATE;     06:00:00</cycledef>\n')
     strings.append('\t<cycledef group="enkf" >&SDATE;     &EDATE;     06:00:00</cycledef>\n')
     strings.append('\t<cycledef group="wdas" >&SDATE;     &EDATE;     06:00:00</cycledef>\n')
     if base['wfs_cyc'] != 0:

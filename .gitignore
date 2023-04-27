@@ -3,14 +3,15 @@
 *.o
 *.mod
 
-# Ignore exec folder
+# Ignore populated folders
 exec/
+fix/*
 
-# Ignore sorc folders from externals
+# Ignore sorc folders from externals, generated files
 sorc/logs/
-sorc/fv3gfs.fd/
-sorc/gfs_post.fd/
+sorc/gsmwam_ipe.fd/
 sorc/gsi.fd/
-sorc/ufs_utils.fd/
-sorc/gfs_wafs.fd/
-sorc/verif-global.fd/
+sorc/wamipe_utils.fd/
+sorc/comio.fd/
+sorc/checkout-*.log
+sorc/obsproc*/

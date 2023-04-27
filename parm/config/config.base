@@ -5,55 +5,50 @@
 
 echo "BEGIN: config.base"
 export NODA=NO
-[[ $CDUMP = "wfr" ]] && export NODA=YES
+[[ $CDUMP = "wrs" ]] && export NODA=YES
 [[ $cyc = "06" || $cyc = "18" ]] && export NODA=YES
 
 # Machine environment
-export machine="@MACHINE@"
+export machine="WCOSS2"
+export OMP_NUM_THREADS=1
 
-# EMC parallel or NCO production
-export RUN_ENVIR="emc"
+# "emc" dev or "nco" production
+export RUN_ENVIR="nco"
 
 # Account, queue, etc.
-export ACCOUNT="@ACCOUNT@"
-export QUEUE="@QUEUE@"
-export QUEUE_ARCH="@QUEUE_ARCH@"
+export ACCOUNT="WFS-DEV"
+export QUEUE="dev"
+export QUEUE_ARCH="dev_transfer"
 
 # Project to use in mass store:
 HPSS_PROJECT=swpc-para
 
 # Directories relative to installation areas:
-export HOMEwfs=@HOMEwfs@
-export PARMwamipe=$HOMEwfs/parm
-export PARMDIR=$PARMwamipe/parm_wamipe
-export FIXwamipe=$HOMEwfs/fix
-export USHwamipe=$HOMEwfs/ush
-export UTILwamipe=$HOMEwfs/util
-export EXECwamipe=$HOMEwfs/exec
-export SCRwamipe=$HOMEwfs/scripts
+export PARMwfs=$HOMEwfs/parm
+export PARMDIR=$PARMwfs/parm_wamipe
+export FIXwfs=$HOMEwfs/fix
+export USHwfs=$HOMEwfs/ush
+export UTILwfs=$HOMEwfs/util
+export EXECwfs=$HOMEwfs/exec
+export SCRwfs=$HOMEwfs/scripts
 
 ########################################################################
 
 # GLOBAL static environment parameters
-export NWPROD="@NWPROD@"
-export COMROOT="@COMROOT@"
-export DMPDIR="@DMPDIR@"
+export NWPROD="${NWROOT:-"/lfs/h1/ops/para/packages"}"
+export COMROOT="${COMROOT:-"/lfs/h1/ops/prod/com"}"
+export DATAROOT="${DATAROOT:-"/lfs/f1/ops/prod/tmp"}"
 export RTMFIX=$CRTM_FIX
-export DCOM="@DCOM@"
+export DCOM=${DCOM:-"/lfs/h1/ops/prod/dcom"}
 
 # USER specific paths
-export HOMEDIR="@HOMEDIR@"
-export STMP="@STMP@"
-export PTMP="@PTMP@"
-export NOSCRUB="@NOSCRUB@"
-
-# Base directories for various builds
-export BASE_GIT="@BASE_GIT@"
-export BASE_SVN="@BASE_SVN@"
+export HOMEDIR="/lfs/h1/swpc/wam/noscrub/$USER"
+export STMP="/lfs/h1/swpc/stmp/$USER"
+export PTMP="/lfs/h1/swpc/ptmp/$USER"
+export NOSCRUB="/lfs/h1/swpc/wam/noscrub/$USER"
 
 # WAM-IPE paths
-export PARAMETER_PATH="@PARAMETER_PATH@"
-export IPE_IC_DIR="@IPE_IC_DIR@" # need to change to IPE_FIX
+export IPE_IC_DIR="$HOMEwfs/fix/IPE_FIX" # need to change to IPE_FIX
 
 # Toggle to turn on/off WFS downstream processing.
 export DO_BUFRSND="NO"
@@ -102,31 +97,11 @@ export IPEGRID=${IPEGRID:-${IPE_IC_DIR}/$IPEGRIDFILENAME}
 export GRIDDIR=${GRIDDIR:-$IPE_IC_DIR}
 export HWMPATH=${HWMPATH:-$IPE_IC_DIR}
 
-# EXPERIMENT specific environment parameters
-export SDATE=@SDATE@
-export EDATE=@EDATE@
-export assim_freq=6
-export PSLOT="@PSLOT@"
-export EXPDIR="@EXPDIR@/$PSLOT"
-export ROTDIR="@ROTDIR@/$PSLOT"
-export ROTDIR_DUMP="YES"                #Note: A value of "NO" does not currently work
-export DUMP_SUFFIX=""
-export DATAROOT="$PTMP/RUNDIRS/$PSLOT/$CDATE/$CDUMP"
-export ARCDIR="$NOSCRUB/archive/$PSLOT"
-export ICSDIR="@ICSDIR@"
-export ATARDIR="/NCEPDEV/$HPSS_PROJECT/1year/$USER/$machine/scratch/$PSLOT"
-export ROTDIR=${ROTDIR:-$PTMP/$USER/$JOBNAME}              # where model I/O files are stored
-export RESTARTDIR=${RESTARTDIR:-$ROTDIR/$CDUMP.$PDY/$cyc/RESTART} # folder containing restart files
-export EXECGLOBAL=${EXECGLOBAL:-$BASE_NEMS/exe}            # NEMS executable directory
-export FIXGLOBAL=${FIXGLOBAL:-$FIXwamipe/GSM/fix_am}         # global fix files
-export FIX_IDEA=$FIXwamipe/WAM_gh_l150
-
 # Commonly defined parameters in JJOBS
 export envir=${envir:-"prod"}
-export NET=${NET:-${CDUMP:-"wfs"}}
-export RUN=${RUN:-$NET}
-export PDUMP="g${RUN:1}"
-export jlogfile="${EXPDIR}/logs/jlogfile"
+export NET=${NET:-"wfs"}
+export PDUMP="g${CDUMP:1}"
+export jlogfile=${jlogfile:-"${DATA}/jlogfile"}
 export ERRSCRIPT=${ERRSCRIPT:-'eval [[ $err = 0 ]]'}
 export LOGSCRIPT=${LOGSCRIPT:-""}
 #export ERRSCRIPT=${ERRSCRIPT:-"err_chk"}
@@ -134,10 +109,27 @@ export LOGSCRIPT=${LOGSCRIPT:-""}
 export REDOUT="1>"
 export REDERR="2>"
 
-export SENDECF="NO"
-export SENDCOM="NO"
-export SENDDBN="NO"
-export SENDSDM="NO"
+export SENDECF=${SENDECF:-"NO"}
+export SENDCOM=${SENDCOM:-"NO"}
+export SENDDBN=${SENDDBN:-"NO"}
+export SENDSDM=${SENDSDM:-"NO"}
+
+# EXPERIMENT specific environment parameters
+#export SDATE=2022052512
+#export EDATE=2023052512
+export assim_freq=6
+export PSLOT="WFS-OPS"
+export EXPDIR="$EXPDIR"
+export ROTDIR_DUMP="YES"                #Note: A value of "NO" does not currently work
+export DUMP_SUFFIX=""
+export DATAROOT="${DATAROOT:-"/lfs/h1/swpc/ptmp/$USER/RUNDIRS/$PSLOT"}"
+export ATARDIR="/NCEPDEV/$HPSS_PROJECT/5year/$USER/$machine/$PSLOT"
+export COMIN="${COMIN:-$(compath.py $NET/$wfs_ver/$CDUMP.$PDY/$cyc)}"
+export COMOUT="${COMOUT:-$(compath.py -o $NET/$wfs_ver/$CDUMP.$PDY/$cyc)}"
+export RESTARTDIR=${RESTARTDIR:-$COMOUT/RESTART} # folder containing restart files
+export EXECGLOBAL=${EXECGLOBAL:-$BASE_NEMS/exe}            # NEMS executable directory
+export FIXGLOBAL=${FIXGLOBAL:-$FIXwfs/GSM/fix_am}         # global fix files
+export FIX_IDEA=$FIXwfs/WAM_gh_l150
 
 # Resolution specific parameters
 export IDEA=${IDEA:-.true.}
@@ -178,22 +170,22 @@ export FLXOSUF=${FLXOSUF:-flx}
 export SIGIO_OUT=${SIGIO_OUT:-.true.}
 export SUFOUT="" # ${SUFOUT:-".$CDATE"}
 
-[ "$CDUMP" = "wfs" -o "$CDUMP" = "wfr" ] && SWIO=.true.
+[ "$CDUMP" = "wfs" -o "$CDUMP" = "wrs" ] && SWIO=.true.
 export SWIO=${SWIO:-.false.}
 if [[ $SWIO = .true. ]] ; then
   if [[ $WAM_IPE_COUPLING = .true. ]] ; then
-    export SWIO_MODELS=${SWIO_MODELS:-"IIO05 IIO10 AIO05 AIO10"}
+    export SWIO_MODELS=${SWIO_MODELS:-"IIO10 AIO10 IIO05 AIO05"}
     export IIO05_PREFIX=${IIO05_PREFIX:-"ipe05"}
     export IIO10_PREFIX=${IIO10_PREFIX:-"ipe10"}
-    export AIO05_PREFIX=${AIO05_PREFIX:-"gsm05"}
-    export AIO10_PREFIX=${AIO10_PREFIX:-"gsm10"}
+    export AIO05_PREFIX=${AIO05_PREFIX:-"wam05"}
+    export AIO10_PREFIX=${AIO10_PREFIX:-"wam10"}
     export IIO05_CADENCE=${IIO05_CADENCE:-"300"}
     export IIO10_CADENCE=${IIO10_CADENCE:-"600"}
     export AIO05_CADENCE=${AIO05_CADENCE:-"300"}
     export AIO10_CADENCE=${AIO10_CADENCE:-"600"}
   else
     export SWIO_MODELS=${SWIO_MODELS:-"AIO"}
-    export AIO_PREFIX=${AIO_PREFIX:-"gsm"}
+    export AIO_PREFIX=${AIO_PREFIX:-"wam"}
     export AIO_CADENCE=${AIO_CADENCE:-"3600"}
   fi
 fi
@@ -207,12 +199,12 @@ export PLAS=IPE_State.apex
 if [[ "$CDUMP" == "wdas" ]] ; then
    export FHCYC=1
    export FTSFS=10
-elif [ "$CDUMP" == "wfs" -o "$CDUMP" == "wfr" ] ; then
+elif [ "$CDUMP" == "wfs" -o "$CDUMP" == "wrs" ] ; then
    export FHCYC=24
 fi
 
 # WFS cycle info
-export wfs_cyc=@wfs_cyc@ # 0: no wfs cycle, 1: 00Z only, 2: 00Z and 12Z only, 4: all 4 cycles.
+export wfs_cyc=4 # 0: no wfs cycle, 1: 00Z only, 2: 00Z and 12Z only, 4: all 4 cycles.
 
 # WFS output and frequency
 export FHMIN_WFS=0
@@ -223,19 +215,19 @@ export FHMAX_WFS_12=48
 export FHMAX_WFS_18=48
 export FHMAX_WFS=$(eval echo \${FHMAX_WFS_$cyc})
 
-export FHMAX_WFR_00=7
-export FHMAX_WFR_06=7
-export FHMAX_WFR_12=7
-export FHMAX_WFR_18=7
-export FHMAX_WFR=$(eval echo \${FHMAX_WFR_$cyc})
+export FHMAX_WRS_00=8
+export FHMAX_WRS_06=8
+export FHMAX_WRS_12=8
+export FHMAX_WRS_18=8
+export FHMAX_WRS=$(eval echo \${FHMAX_WRS_$cyc})
 
 export FHOUT_WFS=3
 export FHMAX_HF_WFS=0
 export FHOUT_HF_WFS=1
 
-export FHOUT_WFR=3
-export FHMAX_HF_WFR=0
-export FHOUT_HF_WFR=1
+export FHOUT_WRS=3
+export FHMAX_HF_WRS=0
+export FHOUT_HF_WRS=1
 
 # I/O QUILTING, true--use Write Component; false--use GFDL FMS
 # if quilting=true, choose OUTPUT_GRID as cubed_sphere_grid in netcdf or gaussian_grid
@@ -252,7 +244,7 @@ export DOIAU_ENKF="NO"
 export IAUFHRS_ENKF=6
 export IAU_DELTHRS_ENKF=6
 [ "$SDATE" = "$CDATE" ] && export DOIAU="NO" && export DOIAU_ENKF="NO"
-[ "$CDUMP" = "wfr" ] && export DOIAU="NO" && export DOIAU_ENKF="NO"
+[ "$CDUMP" = "wrs" ] && export DOIAU="NO" && export DOIAU_ENKF="NO"
 
 # Microphysics Options: 99-ZhaoCarr, 8-Thompson; 6-WSM6, 10-MG, 11-GFDL
 export imp_physics=11
@@ -260,7 +252,7 @@ export imp_physics=11
 # Shared parameters
 # Hybrid related
 export DOHYBVAR="NO"
-export NMEM_ENKF=@NMEM_ENKF@
+export NMEM_ENKF=0
 export SMOOTH_ENKF="YES"
 export l4densvar=".true."
 export lwrite4danl=".false."

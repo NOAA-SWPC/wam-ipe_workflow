@@ -1,0 +1,112 @@
+#!/bin/ksh
+set -x
+################################################################################
+####  UNIX Script Documentation Block
+#                      .                                             .
+# Script name:         JWAMIPE_STARTCYCLE
+# Script description:  J-Job for allowing the WRS cycle to begin
+#
+# Author: Adam Kubaryk      Org: NCEP/SWPC     Date: 2023-04-27
+#
+# Abstract: This script serves as the J-Job for the WRS startcycle job, which
+#           simply checks for the existence of inputs necessary to run the
+#           WRS analysis job.
+# 
+# $Id$
+#
+# Attributes:
+#   Language: ksh shell
+#   Machine: WCOSS2
+# 
+################################################################################
+
+export RUN_ENVIR=${RUN_ENVIR:-"nco"}
+export PS4='$SECONDS + '
+date
+
+
+##############################################
+# Obtain unique process id (pid) and make temp directory
+##############################################
+jobid=${jobid:-${job}.$(hostname -s).$$}
+export pid=${pid:-$$}
+export outid=${outid:-"LL$job"}
+export DATA=${DATA:-${DATAROOT}/${jobid:?}}
+mkdir -p $DATA
+cd $DATA
+
+
+##############################################
+# Run setpdy and initialize PDY variables
+##############################################
+export cycle="t${cyc}z"
+setpdy.sh
+. ./PDY
+
+
+##############################################
+# Set com directory
+##############################################
+export CDATE=${CDATE:-${PDY}${cyc}}
+export CDUMP=${CDUMP:-"wrs"}
+
+#############################
+# Source relevant config files
+#############################
+configs="base"
+export EXPDIR=${EXPDIR:-$HOMEwfs/parm/config}
+for config in $configs; do
+    . $EXPDIR/config.$config
+    export err=$?; err_chk
+done
+
+##########################################
+# Source machine runtime environment
+##########################################
+. $HOMEwfs/env/${machine}.env anal
+export err=$? ; err_chk "GSI analysis or sfc analysis failure"
+
+
+##############################################
+# Determine Job Output Name on System
+##############################################
+export pgmout="OUTPUT.${pid}"
+export pgmerr=errfile
+
+
+##############################################
+# Begin JOB SPECIFIC work
+##############################################
+
+GDUMP=${GDUMP:-"wfs"}
+PREFIX=${PREFIX:-"${CDUMP}.t${cyc}z."}
+FDATE=$($NDATE +3 $CDATE)
+export err=$? ; err_chk
+
+export COMIN=${COMIN:-$(compath.py $NET/${wfs_ver}/$GDUMP.$PDY/$cyc)}
+export err=$? ; err_chk
+
+###############################################################
+# Run relevant exglobal script
+env
+echo "HAS BEGUN on `hostname`"
+
+${STARTCYCLESH:-$SCRwfs/exwamipe_nowcast_startcycle.sh}
+export err=$? ; err_chk
+
+
+##############################################
+# End JOB SPECIFIC work
+##############################################
+
+##############################################
+# Final processing
+##############################################
+if [ -e "$pgmout" ] ; then
+  cat $pgmout
+fi
+
+echo "ENDED NORMALLY."
+
+date
+exit 0

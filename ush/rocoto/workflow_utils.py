@@ -21,7 +21,7 @@ SCHEDULER_MAP={'HERA':'slurm',
                'WCOSS':'lsf',
                'WCOSS_DELL_P3':'lsf',
                'WCOSS_C':'lsfcray',
-               'WCOSS2': 'pbs'}
+               'WCOSS2': 'pbspro'}
 
 class UnknownMachineError(Exception): pass
 class UnknownConfigError(Exception): pass
@@ -211,46 +211,6 @@ def create_wf_task(task, cdump='wdas', cycledef=None, envar=None, dependency=Non
     task = ''.join(task)
 
     return task
-
-
-def create_firstcyc_task(cdump='wdas'):
-    '''
-    This task is needed to run to finalize the first half cycle
-    '''
-
-    task = 'firstcyc'
-    taskstr = '%s' % task
-
-    deps = []
-    data = '&EXPDIR;/logs/@Y@m@d@H.log'
-    dep_dict = {'type':'data', 'data':data, 'offset':'24:00:00'}
-    deps.append(rocoto.add_dependency(dep_dict))
-    dep_dict = {'type':'cycleexist', 'condition':'not', 'offset':'-06:00:00'}
-    deps.append(rocoto.add_dependency(dep_dict))
-    dependencies = rocoto.create_dependency(dep_condition='and', dep=deps)
-
-    task_dict = {'taskname': '%s' % taskstr, \
-                 'cycledef': 'first', \
-                 'maxtries': '&MAXTRIES;', \
-                 'final' : True, \
-                 'command': 'sleep 1', \
-                 'jobname': '&PSLOT;_%s_@H' % taskstr, \
-                 'account': '&ACCOUNT;', \
-                 'queue': '&QUEUE_ARCH;', \
-                 'walltime': '&WALLTIME_ARCH_%s;' % cdump.upper(), \
-                 'native': '&NATIVE_ARCH_%s;' % cdump.upper(), \
-                 'resources': '&RESOURCES_ARCH_%s;' % cdump.upper(), \
-                 'log': '&ROTDIR;/logs/@Y@m@d@H/%s.log' % taskstr, \
-                 'queue': '&QUEUE_ARCH_%s;' % cdump.upper(), \
-                 'dependency': dependencies}
-
-    if get_scheduler(detectMachine()) in ['slurm']:
-        task_dict['queue'] = '&QUEUE;'
-        task_dict['partition'] = '&PARTITION_ARCH;'
-
-    task = rocoto.create_task(task_dict)
-
-    return ''.join(task)
 
 
 def get_wfs_interval(wfs_cyc):

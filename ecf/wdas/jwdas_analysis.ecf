@@ -1,5 +1,5 @@
-#! /bin/bash
-#PBS -N wfs_analysis_%CYC%
+#!/bin/bash
+#PBS -N wdas_analysis_high_%CYC%
 #PBS -j oe
 #PBS -S /bin/bash
 #PBS -q %QUEUE%
@@ -16,7 +16,7 @@ model=wfs
 set -x
 
 export NET=%NET:wfs%
-export CDUMP=%RUN:wfs%
+export CDUMP=%RUN:wdas%
 
 ############################################################
 # Load modules

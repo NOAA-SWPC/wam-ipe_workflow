@@ -2,7 +2,7 @@
 ################################################################################
 ####  UNIX Script Documentation Block
 #                      .                                             .
-# Script name:         exglobal_fcst.sh.ecf
+# Script name:         exglobal_fcst_nems.sh
 # Script description:  Runs a global spectral model forecast
 #
 # Author:        Mark Iredell       Org: NP23         Date: 1999-05-01
@@ -55,6 +55,8 @@
 #                      : Added THEIA option ; turned off ESMF Compliance check etc
 #                      : added MICRO_PHY_DATA
 # 2015-10 Fanglin Yang : debug and update to be able to run both fcst1 and fcst2 for NEMS GFS
+# 2021-04 Adam Kubaryk : changes to support WAM-IPE forecasts
+# 2023-04 Adam Kubaryk : updates to support CONOPS2 of WFS
 #
 # Usage:  exglobal_fcst.sh.ecf SIGI/GRDI SFCI SIGO FLXO FHOUT FHMAX IGEN D3DO NSTI NSTO FHOUT_HF FHMAX_HF
 #
@@ -507,19 +509,18 @@ XC=${XC}
 SUFOUT=${SUFOUT}
 
 prefix=$CDUMP
-rprefix=$rCDUMP
 
 mkdir -p $RESTARTDIR
 if [[ $NEMS = .true. ]] ; then
   if [ $NEMSIO_IN = .true. ]; then
-    idate=` $NEMSIOGET $GRDI idate  | tr -s ' ' | cut -d' ' -f 3-7`
-    iyear=` echo $idate | cut -d' ' -f 1`
-    imonth=`printf "%02d" $(echo $idate | cut -d' ' -f 2)`
-    iday=`  printf "%02d" $(echo $idate | cut -d' ' -f 3)`
-    ihour=` printf "%02d" $(echo $idate | cut -d' ' -f 4)`
+    idate=$( $NEMSIOGET $GRDI idate  | tr -s ' ' | cut -d' ' -f 3-7)
+    iyear=$( echo $idate | cut -d' ' -f 1)
+    imonth=$(printf "%02d" $(echo $idate | cut -d' ' -f 2))
+    iday=$(  printf "%02d" $(echo $idate | cut -d' ' -f 3))
+    ihour=$( printf "%02d" $(echo $idate | cut -d' ' -f 4))
     export CDATE=${iyear}${imonth}${iday}${ihour}
-    nfhour=`$NEMSIOGET $GRDI nfhour | tr -s ' ' | cut -d' ' -f 3`
-    export FDATE=`$NDATE $nfhour $CDATE`
+    nfhour=$($NEMSIOGET $GRDI nfhour | tr -s ' ' | cut -d' ' -f 3 | cut -d'.' -f 1)
+    export FDATE=$($NDATE $nfhour $CDATE)
   else
     export CDATE=$(eval $SIGHDR $SIGI idate)
     export FDATE=$($NDATE `eval $SIGHDR $SIGI fhour | cut -d'.' -f 1` $CDATE)
@@ -679,8 +680,8 @@ export FHSEG=${FHSEG:-0}
 export FHMAX=${FHMAX:-$((10#$FHINI+10#$FHSEG))}
 export DELTIM=${DELTIM:-$((3600/(JCAP/20)))}
 export DTPHYS=${DTPHYS:-$DELTIM}
-export FHRES=${FHRES:-24}
-export FHZER=${FHZER:-6}
+export FHRES=${FHRES:-3}
+export FHZER=${FHZER:-3}
 export FHLWR=${FHLWR:-3600}
 export FHSWR=${FHSWR:-3600}
 export FHROT=${FHROT:-0}
@@ -709,10 +710,10 @@ export IPEFREQ=${IPEFREQ:-3600}
 export IPEFMAX=${IPEFMAX:-$((FHMAX*3600))}
 
 ## wam_control_in
-export JH0=${JH0:-1.75}
-export JH_tanh=${JH_tanh:-0.5}
-export JH_semiann=${JH_semiann:-0.5}
-export JH_ann=${JH_ann:-0.0}
+export jh0=${jh0:-1.75}
+export jh_tanh=${jh_tanh:-0.5}
+export jh_semiann=${jh_semiann:-0.5}
+export jh_ann=${jh_ann:-0.0}
 
 export skeddy0=${skeddy0:-140.0}
 export skeddy_semiann=${skeddy_semiann:-60.0}
@@ -879,7 +880,7 @@ while [[ 10#$FH -le $FHMAX ]] ; do
    else
      FNSUB=""
    fi
-   if [ $DOIAU = YES ]; then
+   if [ $DOIAU != "NO" ]; then
      if [ 10#$FH -lt 10#6 ]; then
        FHIAU=$((10#6-10#$FH))
        FHIAU=m$FHIAU
@@ -904,7 +905,7 @@ if [[ $FILESTYLE = "L" ]] ; then
    #ln -fs $O3FORC fort.28
    #ln -fs $O3CLIM fort.48
 
-   ${NCP} $CO2CON fort.15
+#   ${NCP} $CO2CON fort.15
    ${NCP} $MTNVAR fort.24
    ${NCP} $O3FORC fort.28
    ${NCP} $O3CLIM fort.48
@@ -1018,7 +1019,7 @@ while [[ $NEMS = .true. ]] && [[ 10#$FH -le $FHMAX ]] ; do
   else
     FNSUB=""
   fi
-  if [ $DOIAU = YES ]; then
+  if [ $DOIAU != "NO" ]; then
     if [ 10#$FH -lt 10#6 ]; then
       FHIAU=$((10#6-10#$FH))
       FHIAU=m$FHIAU
@@ -1103,9 +1104,6 @@ export wgrib=${wgrib:-$NWPROD/util/exec/wgrib}
 
 if [ $DOIAU = YES ]; then
   export RESTART=.false.
-  export FHRES=3
-  #export FHOUT=1 # ???
-  export FHZER=3
   export IAU=.true.
   SWIO_IDATE=$($NDATE +6 $CDATE)0000
 else
@@ -1116,12 +1114,12 @@ SWIO_IDATE=${SWIO_IDATE:-${CDATE}0000}
 SWIO_SDATE=${FDATE}0000
 SWIO_EDATE=$($NDATE $((FHMAX-$FHROT)) $FDATE)0000
 
-if [ $CDUMP = "wfr" ] ; then
-    sdate=${FDATE}15
+if [ $CDUMP = "wrs" ] ; then
+    sdate=${FDATE}$(printf %02d $data_poll_interval_min)
     edate=${SWIO_EDATE:0:12}
     while [ $sdate -le $edate ] ; do
         $NLN $COMOUT/${CDUMP}.t${cyc}z.${sdate:0:8}_${sdate:8}00.lock ${sdate:0:8}_${sdate:8}00.lock
-        sdate=$($MDATE 15 $sdate)
+        sdate=$($MDATE $data_poll_interval_min $sdate)
     done
 fi
 
@@ -1132,9 +1130,6 @@ export SWIO_EDATE=${SWIO_EDATE:0:8}_${SWIO_EDATE:8}
 
 # Mostly IDEA-related stuff in this section
 #--------------------------------------------------------------
-if [ $NEMS = .true. ] ; then # grids for mediator
-  [[ $IPE = .true. ]] && $NCP ${FIXwamipe}/MED_SPACEWX/gsm%wam%T62_ipe%80x170/ipe3dgrid2.nc .
-fi
 
 if [ $IDEA = .true. ]; then
   ${NLN} $COMOUT/wam_fields_${CDATE}_${cycle}.nc $DATA/wam_fields.nc
@@ -1142,13 +1137,14 @@ if [ $IDEA = .true. ]; then
   export START_UT_SEC=$((10#$INI_HOUR*3600))
   export END_TIME=$((IPEFMAX+$START_UT_SEC))
   export MSIS_TIME_STEP=${MSIS_TIME_STEP:-900}
-  ${NLN} $COMOUT/$CDUMP.t${cyc}z.input_parameters input_parameters.nc
+  ${NLN} $COMOUT/$CDUMP.t${cyc}z.input_parameters.nc input_parameters.nc
+  ${NLN} $COMOUT/$CDUMP.t${cyc}z.input_parameters.txt wam_input_f107_kp.txt
   if [ $INPUT_PARAMETERS = realtime ] ; then
-    $HOMEwfs/ush/parse_realtime.py -s $($MDATE -$((36*60)) ${FDATE}00) -d $((60*(36+ 10#$FHMAX - 10#$FHINI))) -p $DCOM
+    [[ ! -f input_parameters.nc ]] && $HOMEwfs/ush/parse_realtime.py -s $($MDATE -$((36*60)) ${FDATE}00) -d $((60*(36+ 10#$FHMAX - 10#$FHINI))) -p $DCOM
   elif [ $INPUT_PARAMETERS = conops2 ] ; then
     [[ ! -f input_parameters.nc ]] && $HOMEwfs/ush/parse_realtime.py -s $($MDATE -$((36*60)) ${FDATE}00) -d $((2160+$data_poll_interval_min)) -p $DCOM
   else
-    # work from the database
+    # work from the database -- unsupported in operations
     echo "$FIX_F107"   >> temp_fix
     echo "$FIX_KP"     >> temp_fix
     echo "$FIX_SWVEL"  >> temp_fix
@@ -1161,17 +1157,17 @@ if [ $IDEA = .true. ]; then
         -d $((36+ 10#$FHMAX - 10#$FHINI)) -s `$NDATE -36 $FDATE` \
         -p $PARAMETER_PATH -m $INPUT_PARAMETERS -f temp_fix
     rm -rf temp_fix
-    if [ ! -e wam_input_f107_kp.txt ] ; then
-       echo "failed, no f107 file" ; exit 1
-    fi
+  fi
+  if [ ! -f wam_input_f107_kp.txt ] || [ ! -f input_parameters.nc ] ; then
+     export err=1; err_exit "failed, no f107 file"
   fi
   LEN_F107=`wc -l wam_input_f107_kp.txt | cut -d' ' -f 1`
   F107_KP_SIZE=$((LEN_F107-5))
   F107_KP_DATA_SIZE=$F107_KP_SIZE
-  [[ $CDUMP = "wfr" ]] && F107_KP_SIZE=$((2160+60*9))
+  [[ $CDUMP = "wrs" ]] && F107_KP_SIZE=$((2160+60*8))
   F107_KP_INTERVAL=60
   F107_KP_SKIP_SIZE=$((36*60*60/$F107_KP_INTERVAL))
-  [[ $NEMS = .true. ]] && F107_KP_READ_IN_START=$((FHINI*60*60/$F107_KP_INTERVAL))
+  [[ $DOIAU != "NO" ]] && F107_KP_READ_IN_START=180
   export F107_KP_READ_IN_START=${F107_KP_READ_IN_START:-0}
   export f107_kp_size=$((F107_KP_SIZE+$FHINI*60*60/$F107_KP_INTERVAL))
   # global_idea fix files
@@ -1309,11 +1305,11 @@ if [[ $NEMS = .true. ]] ; then
   fi
 fi # NEMS
 
-eval LD_LIBRARY_PATH=$LD_LIBRARY_PATH $FCSTENV $PGM
+#eval LD_LIBRARY_PATH=$LD_LIBRARY_PATH $FCSTENV $PGM
+eval $FCSTENV $PGM
 
 export ERR=$?
 export err=$ERR
-ls -al
 $ERRSCRIPT||exit 2
 
 ################################################################################

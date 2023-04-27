@@ -14,21 +14,12 @@ echo "BEGIN: config.fcst"
 . $EXPDIR/config.fcst_namelist
 
 export med_model="swpc"
-export med_petlist_bounds="40 79"
-export ipm_petlist_bounds="0 39"
-export atm_petlist_bounds="80 111"
 export FORECASTSH="$HOMEwfs/scripts/exwamipe_fcst_nems.sh"
 export FCSTEXECDIR="$HOMEwfs/exec"
 export FCSTEXEC="global_gsmwam_ipe.x"
-export npe_wam=$npe_fcst # This is model resolution dependent, see note above
 
-if [[ "$CDUMP" == "wfs" ]] ; then
-   export npe_wam=$npe_fcst_wfs
-fi
-
-if [[ "$CDUMP" == "wfr" ]] ; then
+if [[ "$CDUMP" == "wrs" ]] ; then
    DATAPOLL=".true."
-   export npe_wam=$npe_fcst_wfr
 fi
 
 export INPUT_PARAMETERS=realtime
@@ -36,7 +27,7 @@ export INPUT_PARAMETERS=realtime
 export DATAPOLL=${DATAPOLL:-".false."}
 if [[ $DATAPOLL = ".true." ]] ; then
   export INPUT_PARAMETERS=conops2
-  export data_poll_interval_min=${data_poll_interval_min:-15}
+  export data_poll_interval_min=${data_poll_interval_min:-5}
   export data_poll_dir=${data_poll_dir:-"."} # where to look for lockfiles
   export data_poll_interval=${data_poll_interval:-60} # polling interval
   export data_poll_interval_sec=${data_poll_interval_sec:-$((60*$data_poll_interval_min))} # DATAPOLL cycle interval
@@ -45,12 +36,6 @@ if [[ $DATAPOLL = ".true." ]] ; then
   ifp_realtime_interval=${ifp_realtime_interval:-$data_poll_interval_min}
 fi
 export ifp_realtime_interval=${ifp_realtime_interval:-"-1"}
-
-if [ $QUILTING = ".true." ]; then
-    export npe_wam=$(echo " $npe_wam + $WRITE_GROUP * $WRTTASK_PER_GROUP" | bc)
-    export npe_fcst=$npe_wam
-    export npe_fcst_wfs=$(echo " $npe_fcst_wfs  + $WRITE_GROUP_WFS * $WRTTASK_PER_GROUP_WFS" | bc)
-fi
 
 # PBL/turbulance schemes
 export hybedmf=".true."
@@ -83,7 +68,7 @@ export USE_COUPLER_RES="NO"
 if [[ "$CDUMP" == "wdas" ]] ; then # WDAS cycle specific parameters
     export restart_interval=${restart_interval:-6}
     if [ $DOIAU = "YES" ]; then export restart_interval=3; fi
-elif [ "$CDUMP" == "wfs" -o "$CDUMP" == "wfr" ] ; then # WFS cycle specific parameters
+elif [ "$CDUMP" == "wfs" -o "$CDUMP" == "wrs" ] ; then # WFS cycle specific parameters
     # Write wfs restart files to rerun fcst from any break point
      export restart_interval=${restart_interval_wfs:-0}
 fi

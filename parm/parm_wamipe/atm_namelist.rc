@@ -8,7 +8,7 @@ fhrot:                   $FHROT
 namelist:                atm_namelist
 total_member:            $ENS_NUM
 grib_input:              $GB
-PE_MEMBER01:             $npe_wam
+PE_MEMBER01:             $npe_fcst
 PE_MEMBER02:             $PE2
 PE_MEMBER03:             $PE3
 PE_MEMBER04:             $PE4

@@ -4,11 +4,11 @@
 
 set -ex
 
-pslot="canned_test"
+pslot="hysell"
 expdir="/lfs/h1/swpc/wam/noscrub/$USER/exp"
 comrot="/lfs/h1/swpc/ptmp/$USER"
-idate="2021082400"
-edate="2021082406"
+idate="2022052512"
+edate="2023052512"
 
 ######################################
 # USER NEED NOT MODIFY BELOW THIS LINE

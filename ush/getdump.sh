@@ -3,8 +3,8 @@ set -x
 
 CDATE=${1:-""}
 CDUMP=${2:-""}
-SOURCE_DIR=${3:-$DMPDIR/${CDUMP}${DUMP_SUFFIX}.${PDY}/${cyc}}
-TARGET_DIR=${4:-$ROTDIR/${CDUMP}.${PDY}/$cyc}
+SOURCE_DIR=${3:-$COMINobsproc}
+TARGET_DIR=${4:-$COMOUT}
 
 DUMP_SUFFIX=${DUMP_SUFFIX:-""}
 
@@ -26,17 +26,16 @@ prefix="$CDUMP.t${cyc}z."
 # Link dump files from SOURCE_DIR to TARGET_DIR
 cd $SOURCE_DIR
 if [ -s ${prefix}updated.status.tm00.bufr_d ]; then
-    if [ $RUN_ENVIR = 'nco' ] ; then
-        for file in `ls ${prefix}*bufr_d ${prefix}*engicegrb ${prefix}*dump_alert_flag* ${prefix}*rtgssthr* \
-                        ${prefix}*seaice.5min* ${prefix}*imssnow96* ${prefix}*NPR.SNW?.SP.S1200.MESH16* `; do
+    for file in ${prefix}*bufr_d ${prefix}*engicegrb ${prefix}*dump_alert_flag* ${prefix}*rtgssthr* \
+                ${prefix}*seaice.5min* ${prefix}*imssnow96* ${prefix}*NPR.SNW?.SP.S1200.MESH16*     \
+                ${prefix}*prepbufr*; do
+        [ ! -f $file ] && export err=1 && err_exit "required prep dump data unavailable"
+        if [ $RUN_ENVIR = 'nco' ] ; then
             cp --preserve=mode,ownership $SOURCE_DIR/$file $TARGET_DIR/w${file:1}
-        done
-    else
-        for file in `ls ${prefix}*bufr_d ${prefix}*engicegrb ${prefix}*dump_alert_flag* ${prefix}*rtgssthr* \
-                        ${prefix}*seaice.5min* ${prefix}*imssnow96* ${prefix}*NPR.SNW?.SP.S1200.MESH16* `; do
+        else
             ln -fs $SOURCE_DIR/$file $TARGET_DIR/w${file:1}
-        done
-    fi
+        fi
+    done
 else
     echo "***ERROR*** ${prefix}updated.status.tm00.bufr_d NOT FOUND in $SOURCE_DIR"
     exit 99

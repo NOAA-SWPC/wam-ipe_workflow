@@ -1,5 +1,6 @@
-export gfs_ver=v16.2
-export obsproc_ver=v1.0
+export gfs_ver=v16.3
+export wfs_ver=v1.2
+export obsproc_ver=v1.1
 
 export PrgEnv_intel_ver=8.1.0
 export craype_ver=2.7.8
@@ -14,30 +15,19 @@ export netcdf_ver=4.7.4
 export hdf5_ver=1.10.6
 export pnetcdf_ver=1.12.2
 
-export esmf_ver=8.0.1
+export esmf_ver=8.4.1
 
 export crtm_ver=2.3.0
-export nemsio_ver=2.5.2
-export sp_ver=2.3.3
-export bacio_ver=2.4.1
-export ip_ver=3.3.3
-export w3nco_ver=2.4.1
-export w3emc_ver=2.7.3
-export nemsio_ver=2.5.2
-export sigio_ver=2.3.2
-export landsfcutil_ver=2.4.1
-export sfcio_ver=1.4.1
-export gfsio_ver=1.4.1
-export nemsiogfs_ver=2.5.3
 
 # misc
 export python_ver=3.8.6
-export prod_util_ver=2.0.9
-export prod_envir_ver=2.0.5
-export gempak_ver=7.14.0
+export prod_util_ver=2.0.14
+export prod_envir_ver=2.0.6
 
 # compath.py for canned inputs
-#export COMPATH=/lfs/h1/ops/canned/com/wfs:/lfs/h1/ops/canned/com/gfs
+#export COMPATH=/lfs/h1/swpc/wam/noscrub/prod/com/wfs
+#export COMPATH=/lfs/h1/swpc/ptmp/adam.kubaryk/prod/com/wfs:/lfs/h1/swpc/ptmp/adam.kubaryk/prod/com/gfs
+# ops/canned/com/wfs:/lfs/h1/ops/canned/com/gfs
 
 # temporary
 #export PARATEST=YES

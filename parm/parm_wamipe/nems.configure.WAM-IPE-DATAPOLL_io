@@ -2,7 +2,7 @@
 ####  NEMS Run-Time Configuration File  #####
 #############################################
 # EARTH #
-EARTH_component_list: MED ATM IPM IIO05 AIO05 DAT
+EARTH_component_list: MED ATM IPM IIO05 AIO05 IIO10 AIO10 DAT
 EARTH_attributes::
   Verbosity = max
 ::
@@ -40,6 +40,20 @@ AIO05_attributes::
   Verbosity = max
   ConfigFile = swio.wam05.rc
 ::
+# IO #
+IIO10_model:                       swio
+IIO10_petlist_bounds:              $ipm_petlist_bounds
+IIO10_attributes::
+  Verbosity = max
+  ConfigFile = swio.ipe10.rc
+::
+# IO #
+AIO10_model:                       swio
+AIO10_petlist_bounds:              $atm_petlist_bounds
+AIO10_attributes::
+  Verbosity = max
+  ConfigFile = swio.wam10.rc
+::
 # DAT #
 DAT_model:                      datapoll
 DAT_petlist_bounds:             $dat_petlist_bounds
@@ -52,7 +66,7 @@ DAT_attributes::
 
 # Run Sequence #
 runSeq::
-  @900.0
+  @600.0
     @300.0
       ATM -> MED :remapMethod=redist
       MED
@@ -61,11 +75,15 @@ runSeq::
         ATM
       @
       IPM
-      IPM -> IIO05
-      IIO05
       ATM -> AIO05
       AIO05
+      IPM -> IIO05
+      IIO05
+      DAT
     @
-    DAT
+    ATM -> AIO10
+    AIO10
+    IPM -> IIO10
+    IIO10
   @
 ::

@@ -1,6 +1,10 @@
 #! /usr/bin/env bash
 set -eux
 
+build_target=${1:-"all"}
+
+if [ $build_target = "all" ] ; then
+
 source ./machine-setup.sh > /dev/null 2>&1
 [[ -z ${comio_ver+x} ]] && source ../versions/build.ver
 cwd=`pwd`
@@ -28,12 +32,19 @@ fi
 
 cd comio.fd
 
-if [ $target = "wcoss_dell_p3" ] ; then
-LIBS=-lgfortran ./configure --prefix=`pwd`/install
-else
 ./configure --prefix=`pwd`/install
-fi
-
 make && make install
+
+elif [ $build_target = "clean" ] ; then
+
+cd comio.fd
+
+make clean
+
+elif [ $build_target = "install" ] ; then
+
+echo "run ./build_all.sh install"
+
+fi
 
 exit

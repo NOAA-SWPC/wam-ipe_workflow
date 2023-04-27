@@ -1,5 +1,27 @@
 #!/bin/ksh
 set -x
+################################################################################
+####  UNIX Script Documentation Block
+#                      .                                             .
+# Script name:         JWAMIPE_FORECAST
+# Script description:  J-Job for WDAS, WFS, and WRS forecast/nowcast jobs
+#
+# Author: Adam Kubaryk      Org: NCEP/SWPC     Date: 2023-04-27
+#
+# Abstract: This script serves as the J-Job for forecast and nowcast jobs,
+#           executing either $SCRwfs/exwamipe_fcst_nems.sh or
+#           $SCRwfs/exwamipe_nowcast_service.sh. The major upstream control is
+#           $wrs_service, which determines the ex-script to run.
+#           There is significant logic to handle IAU (yes: WDAS/WFS, no: WRS),
+#           and detecting whether a restart can be attempted.
+# 
+# $Id$
+#
+# Attributes:
+#   Language: ksh shell
+#   Machine: WCOSS2/Hera
+# 
+################################################################################
 
 export RUN_ENVIR=${RUN_ENVIR:-"nco"}
 export PS4='$SECONDS + '
@@ -29,23 +51,21 @@ setpdy.sh
 # Set com directory
 ##############################################
 export CDATE=${CDATE:-${PDY}${cyc}}
-export CDUMP=${CDUMP:-${RUN:-"wfs"}}
-
+export CDUMP=${CDUMP:-"wfs"}
 
 #############################
 # Source relevant config files
 #############################
 configs="base fcst"
 export EXPDIR=${EXPDIR:-$HOMEwfs/parm/config}
-export config_path=${config_path:-$HOMEwfs/parm/config}
 for config in $configs; do
-    . $config_path/config.$config
+    . $EXPDIR/config.$config
     export err=$? ; err_chk
 done
 
-while read line; do export $line ; done < <($USHwamipe/create_config.py \
+while read line; do export $line ; done < <($USHwfs/create_config.py \
                                             -d $PARMDIR/default_config.json -p $DCOM)
-
+[ -z $on2_ref_val ] && export err=1 && err_exit "failure setting necessary variables used in namelist"
 
 ##########################################
 # Source machine runtime environment
@@ -79,11 +99,11 @@ if [ $CDUMP = "wfs" ]; then
     export FHOUT=$FHOUT_WFS
     export FHMAX_HF=$FHMAX_HF_WFS
     export FHOUT_HF=$FHOUT_HF_WFS
-elif [ $CDUMP = "wfr" ]; then
-    export FHMAX=$FHMAX_WFR
-    export FHOUT=$FHOUT_WFR
-    export FHMAX_HF=$FHMAX_HF_WFR
-    export FHOUT_HF=$FHOUT_HF_WFR
+elif [ $CDUMP = "wrs" ]; then
+    export FHMAX=$FHMAX_WRS
+    export FHOUT=$FHOUT_WRS
+    export FHMAX_HF=$FHMAX_HF_WRS
+    export FHOUT_HF=$FHOUT_HF_WRS
 else
     export FHMAX_HF=0
     export FHOUT_HF=1
@@ -93,12 +113,84 @@ export COMIN=${COMIN:-$(compath.py $NET/${wfs_ver}/$CDUMP.$PDY/$cyc)}
 export COMIN_GES=${COMIN_GES:-$(compath.py $NET/${wfs_ver}/$GDUMP.$gPDY/$gcyc)}
 export COMOUT=${COMOUT:-$(compath.py -o $NET/${wfs_ver}/$CDUMP.$PDY/$cyc)}
 
+# restart handling
+if [ -f $RESTARTDIR/sigr1 ] ; then
+    export RESTART=".true."
+
+    export SIGI=$RESTARTDIR/sigr1
+    # try to find all restart files
+    [ -f $RESTARTDIR/sigr2 ]     && export SIGI2=$RESTARTDIR/sigr2
+    [ -f $RESTARTDIR/fort.1051 ] && export FORT1051=$RESTARTDIR/fort.1051
+    [ -f $RESTARTDIR/sfcr ]      && export SFCI=$RESTARTDIR/sfcr
+    [ -f $RESTARTDIR/grdr1 ]     && export GRDI=$RESTARTDIR/grdr1
+    [ -f $RESTARTDIR/grdr2 ]     && export GRDI2=$RESTARTDIR/grdr2
+    [ -f $RESTARTDIR/WAM_IPE_RST_wrt ] && export RSTR=$RESTARTDIR/WAM_IPE_RST_wrt
+
+    # ensure all needed variables were set to something
+    for var in SIGI SIGI2 FORT1051 SFCI GRDI GRDI2 RSTR ; do
+        val=\$$var
+        [ -z $val ] && export RESTART=".false."
+    done
+
+    # now ensure we're not in the IAU period, and a matching IPE file exists
+    if [ $RESTART = ".true." ] ; then
+        idate=$( $NEMSIOGET $GRDI idate  | tr -s ' ' | cut -d' ' -f 3-7)
+        iyear=$( echo $idate | cut -d' ' -f 1)
+        imonth=$(printf "%02d" $(echo $idate | cut -d' ' -f 2))
+        iday=$(  printf "%02d" $(echo $idate | cut -d' ' -f 3))
+        ihour=$( printf "%02d" $(echo $idate | cut -d' ' -f 4))
+        cdate=${iyear}${imonth}${iday}${ihour}
+        export nfhour=$($NEMSIOGET $GRDI nfhour | tr -s ' ' | cut -d' ' -f 3 | cut -d'.' -f 1)
+
+        [ $DOIAU = "YES" ] && [ $nfhour -lt 9 ] && export RESTART=".false."
+
+        fdate=$($NDATE $nfhour $cdate)
+
+        plasi=$COMIN/$CDUMP.t${cyc}z.IPE_State.apex.${fdate}00.h5
+
+        [ ! -f $plasi ] && export RESTART=".false."
+    fi
+
+    # finally, go ahead with a restart
+    if [ $RESTART = ".true." ] ; then
+        export FHINI=$nfhour
+        export FHROT=$FHINI
+        if [ $DOIAU = "YES" ] ; then
+            #export IAU=.true.
+            export FHMAX=$((FHMAX+6))
+            export DOIAU="PAST"
+        fi
+        export NEMSIO_IN=".true."
+        export SIGIO_IN=".false."
+    fi
+fi
+
 # IAU handling
 if [ $DOIAU = "YES" ] ; then
     export SFCI=$COMIN/$CDUMP.t${cyc}z.${SFC:0:3}a03
     export SIGI=$COMIN_GES/$GDUMP.t${gcyc}z.${ATM:0:3}f03
     IAU_FG=$COMIN_GES/$GDUMP.t${gcyc}z.${ATM:0:3}f06
     IAU_ANL=$COMIN/$CDUMP.t${cyc}z.${ATM}
+
+    if [ ! -f $SFCI ]; then
+        echo "FATAL ERROR: FILE MISSING: SFCI = $SFCI"
+        export err=1 ; err_exit
+    fi
+
+    if [ ! -f $SIGI ]; then
+        echo "FATAL ERROR: FILE MISSING: SIGI = $SIGI"
+        export err=1 ; err_exit
+    fi
+
+    if [ ! -f $IAU_FG ]; then
+        echo "FATAL ERROR: FILE MISSING: IAU_FG = $IAU_FG"
+        export err=1 ; err_exit
+    fi
+
+    if [ ! -f $IAU_ANL ]; then
+        echo "FATAL ERROR: FILE MISSING: IAU_ANL = $IAU_ANL"
+        export err=1 ; err_exit
+    fi
 
     export FHINI=3
     export FHROT=3
@@ -114,19 +206,19 @@ fi
 env
 echo "HAS BEGUN on `hostname`"
 
-wfr_service=${wfr_service:-"NO"}
+wrs_service=${wrs_service:-"NO"}
 
-if [ $wfr_service = "YES" ]; then
-    $SCRwamipe/exwamipe_fcst_service.sh
+if [ $wrs_service = "YES" ]; then
+    $SCRwfs/exwamipe_nowcast_service.sh
     export err=$? ; err_chk
 else
-    ${FORECASTSH:-$SCRwamipe/exwamipe_fcst_nems.sh}
+    ${FORECASTSH:-$SCRwfs/exwamipe_fcst_nems.sh}
     export err=$? ; err_chk
 fi
 
 ##############################################
 ## Call dbn_alert
-if [ $RUN == wfs ]; then
+if [ $CDUMP == wfs ]; then
     if [ $SENDDBN == YES ]; then
         ${HOMEwfs}/scripts/exwamipe_dbnalert.sh
     fi

@@ -16,7 +16,7 @@
  F107_KP_DATA_SIZE       = ${F107_KP_DATA_SIZE},
  F107_KP_READ_IN_START   = ${F107_KP_READ_IN_START},
  F107_KP_FILE            = './wam_input_f107_kp.txt',
- F107_KP_REALTIME_INTERVAL = $f107_kp_realtime_interval
+ F107_KP_REALTIME_INTERVAL = $ifp_realtime_interval
 /
 &FILEIO
  READ_APEX_NEUTRALS        = ${READ_APEX_NEUTRALS},

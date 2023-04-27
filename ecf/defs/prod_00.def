@@ -2,56 +2,61 @@ suite prod
   family primary
     family 00
       family obsproc
-        family v1.0
-        family gfs
-	family atmos
- 	family dump
-  	   task jobsproc_gfs_atmos_dump_post
-        endfamily
-        endfamily
-        endfamily
+        family v1.1
+          family gfs
+            family atmos
+              family prep
+                task jobsproc_gfs_atmos_prep
+              endfamily
+            endfamily
+          endfamily
 
-        family gdas
-	family atmos
- 	family dump
-  	   task jobsproc_gdas_atmos_dump_post
-        endfamily
-        endfamily
-        endfamily
+         family gdas
+            family atmos
+              family prep
+                task jobsproc_gdas_atmos_prep
+              endfamily
+            endfamily
+          endfamily
 
-        endfamily  ## v1.0 
+        endfamily  ## v1.1
       endfamily    ## obsproc
 
       family wfs
         defstatus complete
         edit PROJ 'WFS'
         edit PACKAGEHOME '/lfs/h1/ops/%ENVIR%/packages/wfs.%wfs_ver%'
-        family v1.1
+        family v1.2
 
           family wdas
-            task jwdas_prep
-              trigger /prod/primary/00/obsproc/v1.0/gdas/atmos/dump/jobsproc_gdas_atmos_dump_post ==  complete
-            task jwdas_analysis_high
-              trigger jwdas_prep == complete
+            task jwdas_analysis
+              trigger /prod/primary/00/obsproc/v1.1/gdas/atmos/prep/jobsproc_gdas_atmos_prep ==  complete
               event 1 release_fcst
             task jwdas_forecast
-              trigger jwdas_analysis_high == complete
+              trigger jwdas_analysis == complete
           endfamily # wdas
 
           family wfs
-            task jwfs_prep
-#             time 03:00
-              trigger /prod/primary/00/obsproc/v1.0/gfs/atmos/dump/jobsproc_gfs_atmos_dump_post == complete
             task jwfs_analysis
-              trigger jwfs_prep eq complete
+              trigger /prod/primary/00/obsproc/v1.1/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete
               event 1 release_fcst
-            task jwfs_forecast_high
+            task jwfs_forecast
               trigger jwfs_analysis == complete
           endfamily # wfs
+
+          family wrs
+            task jwrs_startcycle
+              trigger jwfs_analysis == complete
+            task jwrs_analysis
+              trigger jwrs_startcycle == complete
+            task jwrs_nowcast
+              trigger jwrs_analysis == complete
+            task jwrs_nowcast_service
+              trigger jwrs_analysis == complete
+          endfamily # wrs
 
         endfamily # version
       endfamily # wfs
     endfamily # 00
   endfamily # primary
 endsuite
-
