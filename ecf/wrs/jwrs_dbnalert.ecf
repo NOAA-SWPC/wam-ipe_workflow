@@ -1,0 +1,50 @@
+#!/bin/bash
+#PBS -N wrs_dbnalert_%CYC%
+#PBS -j oe
+#PBS -S /bin/bash
+#PBS -q %QUEUE%
+#PBS -A %PROJ%-%PROJENVIR%
+#PBS -l walltime=09:00:00
+#PBS -l place=shared,select=1:ncpus=1:mem=5GB
+#PBS -l debug=true
+
+model=wfs
+%include <head.h>
+%include <envir-p1.h>
+
+#############################################################
+## Load modules
+##############################################################
+#. $MODULESHOME/init/sh
+module load PrgEnv-intel/$PrgEnv_intel_ver
+module load craype/$craype_ver
+module load intel/$intel_ver
+module load cray-mpich/$cray_mpich_ver
+module load cray-libsci/$cray_libsci_ver
+module load cray-pals/$cray_pals_ver
+module load cfp/$cfp_ver
+module load netcdf/$netcdf_ver
+module list
+
+#############################################################
+## WCOSS_C environment settings
+##############################################################
+
+################################################
+# EXPORT list here
+
+set -x
+
+export cyc=%CYC%
+export NET=%NET:wfs%
+export RUN=%RUN:wrs%
+export CDUMP=%CDUMP:wrs%
+
+# CALL executable job script here
+${HOMEwfs}/jobs/JWAMIPE_DBNALERT
+
+%include <tail.h>
+%manual
+# Please rerun this job with "export ALERT_INPUT_ONLY=YES" when giving up the nowcast job.
+
+%end

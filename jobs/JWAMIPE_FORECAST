@@ -114,6 +114,10 @@ export COMIN_GES=${COMIN_GES:-$(compath.py $NET/${wfs_ver}/$GDUMP.$gPDY/$gcyc)}
 export COMOUT=${COMOUT:-$(compath.py -o $NET/${wfs_ver}/$CDUMP.$PDY/$cyc)}
 
 # restart handling
+if [ $CDUMP = "wrs" ]; then
+    rm -rf $RESTARTDIR/sigr1
+fi
+
 if [ -f $RESTARTDIR/sigr1 ] ; then
     export RESTART=".true."
 
@@ -214,14 +218,6 @@ if [ $wrs_service = "YES" ]; then
 else
     ${FORECASTSH:-$SCRwfs/exwamipe_fcst_nems.sh}
     export err=$? ; err_chk
-fi
-
-##############################################
-## Call dbn_alert
-if [ $CDUMP == wfs ]; then
-    if [ $SENDDBN == YES ]; then
-        ${HOMEwfs}/scripts/exwamipe_dbnalert.sh
-    fi
 fi
 
 ##############################################

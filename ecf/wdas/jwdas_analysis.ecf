@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -N wdas_analysis_high_%CYC%
+#PBS -N wdas_analysis_%CYC%
 #PBS -j oe
 #PBS -S /bin/bash
 #PBS -q %QUEUE%

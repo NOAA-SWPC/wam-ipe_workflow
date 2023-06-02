@@ -31,3 +31,7 @@ export prod_envir_ver=2.0.6
 
 # temporary
 #export PARATEST=YES
+
+#export COMPATH=/lfs/h1/ops/prod/com/gfs:/lfs/h1/ops/prod/com/obsproc
+
+#export DBNLOG=YES

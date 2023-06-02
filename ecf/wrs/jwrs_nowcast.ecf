@@ -4,7 +4,7 @@
 #PBS -S /bin/bash
 #PBS -q %QUEUE%
 #PBS -A %PROJ%-%PROJENVIR%
-#PBS -l walltime=08:00:00
+#PBS -l walltime=09:00:00
 #PBS -l place=excl,select=1:ncpus=112
 ##:mem=120GB
 #PBS -l debug=true
@@ -57,6 +57,8 @@ fi
 # to dcom, this job can fail late in its execution on wallclock exceedance.
 # If the next cycle's WRS nowcast job has successfully spun up, this job
 # _does not_ need to be re-run, as the nowcast will be picked up in stride.
+# However, please rerun dbnalert jobs with "export ALERT_INPUT_ONLY=YES" to
+# alert wrs.tCCz.input_parameters.nc file.
 # The analysis job should not need to be re-run, unless this job fails during
 # its initialization phase for missing data.
 # Restart capability is implemented; wiping $RESTARTDIR will force a coldstart.

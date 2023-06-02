@@ -1,5 +1,5 @@
 #! /bin/bash
-#PBS -N wfs_forecast_high_%CYC%
+#PBS -N wfs_forecast_%CYC%
 #PBS -j oe
 #PBS -S /bin/bash
 #PBS -q %QUEUE%

@@ -15,10 +15,10 @@ model=wfs
 set -x
 
 export NET=%NET:wfs%
-export CDUMP=%RUN:wrs%
+export CDUMP=%RUN:wfs%
 
-cyc=%CYC%
-cycle=t%CYC%z
+export cyc=%CYC%
+export cycle=t%CYC%z
 
 ${HOMEwfs}/jobs/JWAMIPE_STARTCYCLE
 

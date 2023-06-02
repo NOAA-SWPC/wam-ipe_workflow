@@ -60,13 +60,6 @@ for config in $configs; do
     export err=$?; err_chk
 done
 
-##########################################
-# Source machine runtime environment
-##########################################
-. $HOMEwfs/env/${machine}.env anal
-export err=$? ; err_chk "GSI analysis or sfc analysis failure"
-
-
 ##############################################
 # Determine Job Output Name on System
 ##############################################
@@ -78,12 +71,12 @@ export pgmerr=errfile
 # Begin JOB SPECIFIC work
 ##############################################
 
-GDUMP=${GDUMP:-"wfs"}
-PREFIX=${PREFIX:-"${CDUMP}.t${cyc}z."}
-FDATE=$($NDATE +3 $CDATE)
+export GDUMP=${GDUMP:-"wfs"}
+export PREFIX=${PREFIX:-"${CDUMP}.t${cyc}z."}
+export FDATE=$($NDATE +3 $CDATE)
 export err=$? ; err_chk
 
-export COMIN=${COMIN:-$(compath.py $NET/${wfs_ver}/$GDUMP.$PDY/$cyc)}
+export COMIN_GES=${COMIN_GES:-$(compath.py $NET/${wfs_ver}/$GDUMP.$PDY/$cyc)}
 export err=$? ; err_chk
 
 ###############################################################
