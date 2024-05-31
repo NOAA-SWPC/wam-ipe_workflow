@@ -10,7 +10,7 @@ DUMP_SUFFIX=${DUMP_SUFFIX:-""}
 
 # Exit if SORUCE_DIR does not exist
 if [ ! -s $SOURCE_DIR ]; then
-   echo "***ERROR*** DUMP SOURCE_DIR=$SOURCE_DIR does not exist"
+   echo "***FATAL ERROR*** DUMP SOURCE_DIR=$SOURCE_DIR does not exist"
    exit 99
 fi
 
@@ -26,7 +26,7 @@ prefix="$CDUMP.t${cyc}z."
 cd $SOURCE_DIR
 for file in ${prefix}*seaice.5min* ${prefix}*snogrb* \
             ${prefix}*syndata.tcvitals*; do
-    [ ! -f $file ] && export err=1 && err_exit "required global dump data unavailable"
+    [ ! -f $file ] && export err=1 && err_exit "FATAL ERROR: required global dump data unavailable"
     if [ $RUN_ENVIR = 'nco' ] ; then
         cp --preserve=mode,ownership $SOURCE_DIR/$file $TARGET_DIR/w${file:1}
     else

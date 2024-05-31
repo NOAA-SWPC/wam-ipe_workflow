@@ -57,12 +57,12 @@ AIO10_attributes::
 
 # Run Sequence #
 runSeq::
-  @600.0
-    @300.0
+  @${AIO10_CADENCE}.0
+    @${DELTIM_IPE}.0
       ATM -> MED :remapMethod=redist
       MED
       MED -> IPM :remapMethod=redist
-      @60.0
+      @${DELTIM}.0
         ATM
       @
       IPM

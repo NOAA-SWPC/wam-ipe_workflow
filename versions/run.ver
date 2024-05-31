@@ -1,6 +1,5 @@
 export gfs_ver=v16.3
-export wfs_ver=v1.2
-export obsproc_ver=v1.1
+export obsproc_ver=v1.2
 
 export PrgEnv_intel_ver=8.1.0
 export craype_ver=2.7.8
@@ -23,11 +22,3 @@ export crtm_ver=2.3.0
 export python_ver=3.8.6
 export prod_util_ver=2.0.14
 export prod_envir_ver=2.0.6
-
-# compath.py for canned inputs
-#export COMPATH=/lfs/h1/swpc/wam/noscrub/prod/com/wfs
-#export COMPATH=/lfs/h1/swpc/ptmp/adam.kubaryk/prod/com/wfs:/lfs/h1/swpc/ptmp/adam.kubaryk/prod/com/gfs
-# ops/canned/com/wfs:/lfs/h1/ops/canned/com/gfs
-
-# temporary
-#export PARATEST=YES

@@ -22,7 +22,7 @@ echo "BEGIN: config.wam"
 # (Standard) Model resolution dependent variables
 case $case_in in
     "T62")
-        export DELTIM=60
+        export DELTIM=${DELTIM:-30}
         export coupling_interval_fast_sec=${DELTIM}.0
         export coupling_interval_slow_sec=300.0
         export npe_node_fcst=40

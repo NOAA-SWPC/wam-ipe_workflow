@@ -1141,6 +1141,10 @@ if [ $IDEA = .true. ]; then
   ${NLN} $COMOUT/$CDUMP.t${cyc}z.input_parameters.txt wam_input_f107_kp.txt
   if [ $INPUT_PARAMETERS = realtime ] ; then
     [[ ! -f input_parameters.nc ]] && $HOMEwfs/ush/parse_realtime.py -s $($MDATE -$((36*60)) ${FDATE}00) -d $((60*(36+ 10#$FHMAX - 10#$FHINI))) -p $DCOM
+  elif [ $INPUT_PARAMETERS = existing ] ; then
+    echo "doing nothing"
+  elif [ $INPUT_PARAMETERS = existing_recreate ] ; then
+    $HOMEwfs/ush/parse_realtime.py -s $($MDATE -$((36*60)) ${FDATE}00) -d $((60*(36+ 10#$FHMAX - 10#$FHINI))) -p $DCOM -i input_parameters.nc
   elif [ $INPUT_PARAMETERS = conops2 ] ; then
     [[ ! -f input_parameters.nc ]] && $HOMEwfs/ush/parse_realtime.py -s $($MDATE -$((36*60)) ${FDATE}00) -d $((2160+$data_poll_interval_min)) -p $DCOM
   else

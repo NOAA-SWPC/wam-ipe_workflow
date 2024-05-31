@@ -21,7 +21,7 @@
 
 set -ax
 
-IPEGES=${IPEGES:-${COMIN}/${PREFIX}IPE_State.apex.${FDATE}00.h5}
+IPEGES=${IPEGES:-${COMIN_GES}/${PREFIX}IPE_State.apex.${FDATE}00.h5}
 
 while [ ! -f $IPEGES ] ; do
     sleep 30

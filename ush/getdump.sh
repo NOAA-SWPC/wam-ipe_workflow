@@ -10,7 +10,7 @@ DUMP_SUFFIX=${DUMP_SUFFIX:-""}
 
 # Exit if SORUCE_DIR does not exist
 if [ ! -s $SOURCE_DIR ]; then
-   echo "***ERROR*** DUMP SOURCE_DIR=$SOURCE_DIR does not exist"
+   echo "***FATAL ERROR*** DUMP SOURCE_DIR=$SOURCE_DIR does not exist"
    exit 99
 fi
 
@@ -29,7 +29,7 @@ if [ -s ${prefix}updated.status.tm00.bufr_d ]; then
     for file in ${prefix}*bufr_d ${prefix}*engicegrb ${prefix}*dump_alert_flag* ${prefix}*rtgssthr* \
                 ${prefix}*seaice.5min* ${prefix}*imssnow96* ${prefix}*NPR.SNW?.SP.S1200.MESH16*     \
                 ${prefix}*prepbufr*; do
-        [ ! -f $file ] && export err=1 && err_exit "required prep dump data unavailable"
+        [ ! -f $file ] && export err=1 && err_exit "FATAL ERROR: required prep dump data unavailable"
         if [ $RUN_ENVIR = 'nco' ] ; then
             cp --preserve=mode,ownership $SOURCE_DIR/$file $TARGET_DIR/w${file:1}
         else
@@ -37,7 +37,7 @@ if [ -s ${prefix}updated.status.tm00.bufr_d ]; then
         fi
     done
 else
-    echo "***ERROR*** ${prefix}updated.status.tm00.bufr_d NOT FOUND in $SOURCE_DIR"
+    echo "***FATAL ERROR*** ${prefix}updated.status.tm00.bufr_d NOT FOUND in $SOURCE_DIR"
     exit 99
 fi
 

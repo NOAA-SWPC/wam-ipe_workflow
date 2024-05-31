@@ -1,0 +1,61 @@
+#!/bin/ksh
+################################################################################
+####  UNIX Script Documentation Block
+#                      .                                             .
+# Script name:         JWAMIPE_DBNALERT
+# Script description:  alert products for WFS, and WRS
+#
+# Author: Adam Kubaryk      Org: NCEP/SWPC     Date: 2023-04-27
+# Attributes:
+#   Language: ksh shell
+#   Machine: WCOSS2
+#
+################################################################################
+
+set -x
+export PS4='$SECONDS + '
+date
+
+export NET=${NET:-wfs}
+
+####################################
+# obtain unique process id (pid) and make temp directories
+####################################
+export DATA=${DATA:-${DATAROOT}/${jobid:?}}
+mkdir $DATA
+cd $DATA
+
+export pgmout="OUTPUT.$$"
+export pgmerr=errfile
+##############################################
+# Run setpdy and initialize PDY variables
+##############################################
+export cycle="t${cyc}z"
+setpdy.sh
+. ./PDY
+
+export COMIN=${COMIN:-$(compath.py $NET/${wfs_ver}/$CDUMP.$PDY/$cyc)}
+export COMOUT=${COMOUT:-$(compath.py -o $NET/${wfs_ver}/$CDUMP.$PDY/$cyc)}
+
+export MAILTO=${MAILTO:-'nco.spa@noaa.gov,ncep.sos@noaa.gov'}
+
+if [ $CDUMP = wfs ]; then
+  export DBN_ALERT_TYPE=WFS
+elif [ $CDUMP = wrs ]; then
+  export DBN_ALERT_TYPE=WRS
+fi
+
+$HOMEwfs/scripts/exwamipe_dbnalert.sh
+export err=$? ; err_chk
+
+echo "ENDED NORMALLY."
+
+##########################################
+# Remove the Temporary working directory 
+##########################################
+cd $DATAROOT
+#[[ $KEEPDATA = "NO" ]] && rm -rf $DATA
+    
+date
+exit 0
+

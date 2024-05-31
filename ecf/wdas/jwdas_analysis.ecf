@@ -1,12 +1,11 @@
 #!/bin/bash
-#PBS -N wdas_analysis_high_%CYC%
+#PBS -N wdas_analysis_%CYC%
 #PBS -j oe
 #PBS -S /bin/bash
 #PBS -q %QUEUE%
 #PBS -A %PROJ%-%PROJENVIR%
 #PBS -l walltime=00:45:00
 #PBS -l place=excl,select=1:ncpus=128
-##:mem=500GB
 #PBS -l debug=true
 
 model=wfs
