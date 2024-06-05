@@ -1,4 +1,5 @@
 # sorc versions
+export wfs_workflow_ver=v1.2.5
 export comio_ver=v0.0.10
 export gsmwam_ipe_ver=v1.2.4
 export gsi_ver=v1.2.1
