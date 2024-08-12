@@ -27,8 +27,7 @@ prefix="$CDUMP.t${cyc}z."
 cd $SOURCE_DIR
 if [ -s ${prefix}updated.status.tm00.bufr_d ]; then
     for file in ${prefix}*bufr_d ${prefix}*engicegrb ${prefix}*dump_alert_flag* ${prefix}*rtgssthr* \
-                ${prefix}*seaice.5min* ${prefix}*imssnow96* ${prefix}*NPR.SNW?.SP.S1200.MESH16*     \
-                ${prefix}*prepbufr*; do
+                ${prefix}*seaice.5min* ${prefix}*imssnow96* ${prefix}*prepbufr*; do
         [ ! -f $file ] && export err=1 && err_exit "FATAL ERROR: required prep dump data unavailable"
         if [ $RUN_ENVIR = 'nco' ] ; then
             cp --preserve=mode,ownership $SOURCE_DIR/$file $TARGET_DIR/w${file:1}
