@@ -9,7 +9,7 @@ echo $topdir
 echo comio checkout ...
 if [[ ! -d comio.fd ]] ; then
     rm -f ${topdir}/checkout-comio.log
-    git clone --recursive git@github.com:NOAA-SWPC/COMIO.git      --branch $comio_ver comio.fd               >> ${topdir}/checkout-comio.log 2>&1
+    git clone --recursive https://github.com/NOAA-SWPC/COMIO.git      --branch $comio_ver comio.fd               >> ${topdir}/checkout-comio.log 2>&1
 else
     echo 'Skip.  Directory comio.fd already exists.'
 fi
@@ -17,7 +17,7 @@ fi
 echo gsmwam_ipe checkout ...
 if [[ ! -d gsmwam_ipe.fd ]] ; then
     rm -f ${topdir}/checkout-gsmwam_ipe.log
-    git clone --recursive git@github.com:NOAA-SWPC/GSMWAM-IPE.git --branch $gsmwam_ipe_ver gsmwam_ipe.fd     >> ${topdir}/checkout-gsmwam_ipe.log 2>&1
+    git clone --recursive https://github.com/NOAA-SWPC/GSMWAM-IPE.git --branch $gsmwam_ipe_ver gsmwam_ipe.fd     >> ${topdir}/checkout-gsmwam_ipe.log 2>&1
 else
     echo 'Skip.  Directory gsmwam_ipe.fd already exists.'
 fi
@@ -25,7 +25,7 @@ fi
 echo gsi checkout ...
 if [[ ! -d gsi.fd ]] ; then
     rm -f ${topdir}/checkout-gsi.log
-    git clone git@github.com:NOAA-SWPC/GSI                        --branch $gsi_ver gsi.fd                   >> ${topdir}/checkout-gsi.log 2>&1
+    git clone https://github.com/NOAA-SWPC/GSI                        --branch $gsi_ver gsi.fd                   >> ${topdir}/checkout-gsi.log 2>&1
     # not everybody has rights to the VLab repos for GSI-fix and GSI-libsrc -- assume WCOSS2, otherwise user fixes on their own
     if [ $(ls gsi.fd/libsrc | wc -l) = 0 ] ; then
       cp -rp /lfs/h1/swpc/wam/noscrub/swpc.wam/packages/wfs.${wfs_workflow_ver}/sorc/gsi.fd/fix/*    gsi.fd/fix/.
@@ -38,7 +38,7 @@ fi
 echo wamipe_utils checkout ...
 if [[ ! -d wamipe_utils.fd ]] ; then
     rm -f ${topdir}/checkout-wamipe_utils.log
-    git clone --recursive git@github.com:NOAA-SWPC/wam-ipe_utils  --branch $wamipe_utils_ver wamipe_utils.fd >> ${topdir}/checkout-wamipe_utils.log 2>&1
+    git clone --recursive https://github.com/NOAA-SWPC/wam-ipe_utils  --branch $wamipe_utils_ver wamipe_utils.fd >> ${topdir}/checkout-wamipe_utils.log 2>&1
 else
     echo 'Skip.  Directory wamipe_utils.fd already exists.'
 fi
