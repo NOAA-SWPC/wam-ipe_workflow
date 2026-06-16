@@ -1,5 +1,5 @@
-export gfs_ver=v16.3
-export obsproc_ver=v1.2
+export gfs_ver=v17.0
+export obsproc_ver=v1.3
 
 export PrgEnv_intel_ver=8.1.0
 export craype_ver=2.7.8

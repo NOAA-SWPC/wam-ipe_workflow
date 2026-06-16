@@ -1,8 +1,8 @@
 # sorc versions
-export wfs_workflow_ver=v1.2.6
+export wfs_workflow_ver=v1.2.7
 export comio_ver=v0.0.10
-export gsmwam_ipe_ver=v1.2.5
-export gsi_ver=v1.2.2
+export gsmwam_ipe_ver=v1.2.7
+export gsi_ver=v1.2.3
 export wamipe_utils_ver=v1.2.1
 #export obsproc_wamipe_ver=v3.5.0
 #export obsproc_prep_ver=v5.6.1
